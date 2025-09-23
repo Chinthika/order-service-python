@@ -19,6 +19,7 @@ class SecretRetrievalError(RuntimeError):
     """Raised when secret material cannot be loaded."""
 
 
+# ignore: R0903 # Too few public methods
 class AwsSecretsManager:
     """Simple wrapper around the AWS Secrets Manager API."""
 
@@ -43,7 +44,7 @@ class AwsSecretsManager:
 
         try:
             response = self._client.get_secret_value(SecretId=secret_id)
-        except (ClientError, BotoCoreError) as exc:  # pragma: no cover - network errors mocked in tests
+        except (ClientError, BotoCoreError) as exc:
             raise SecretRetrievalError(f"Unable to download secret '{secret_id}'") from exc
 
         payload: Optional[str] = response.get("SecretString")
