@@ -29,9 +29,10 @@ env:
   HELM_CHART_PATH: Infrastructure/helm
   DOCKER_IMAGE: chinthika/order-service
   AWS_REGION: us-east-1
-  ROOT_DOMAIN: chinthika-rathnayake.click
+  ROOT_DOMAIN: chinthika-jayani.click
   STAGING_SUBDOMAIN: staging
-  PROD_SUBDOMAIN: "@"
+  PROD_SUBDOMAIN: prod
+  ROUTE53_ZONE_ID: Z0510592BC0HZCRODWLG
 
 jobs:
   lint-and-test:
@@ -102,7 +103,7 @@ jobs:
           TF_VAR_root_domain: ${{ env.ROOT_DOMAIN }}
           TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
           TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
-          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
+          TF_VAR_route53_zone_id: ${{ env.ROUTE53_ZONE_ID }}
         run: terraform plan -input=false -out=tfplan.binary
 
       - name: Upload plan output
@@ -140,7 +141,7 @@ jobs:
           TF_VAR_root_domain: ${{ env.ROOT_DOMAIN }}
           TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
           TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
-          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
+          TF_VAR_route53_zone_id: ${{ env.ROUTE53_ZONE_ID }}
         run: terraform apply -auto-approve
 
   build-and-push-image:

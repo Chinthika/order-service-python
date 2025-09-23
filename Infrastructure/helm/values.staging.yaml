@@ -87,7 +87,7 @@ ingress:
     alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=60
   certificateArn: ""
   hosts:
-    - host: staging.chinthika-rathnayake.click
+    - host: staging.chinthika-jayani.click
       paths:
         - path: /
           pathType: Prefix

@@ -15,7 +15,6 @@
 |--------|---------|
 | `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` | Push Docker images |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | IAM user with EKS, Route53 & Secrets Manager access |
-| `ROUTE53_ZONE_ID` | Hosted zone ID used by Terraform/external-dns |
 | `ACM_CERTIFICATE_ARN` | Certificate ARN injected into Helm deploys |
 | `EKS_STAGING_CLUSTER_NAME`, `EKS_PROD_CLUSTER_NAME` | Cluster names used by `aws eks update-kubeconfig` |
 | `GRAFANA_ADMIN_PASSWORD` | Injected into Terraform for kube-prometheus-stack |
@@ -59,7 +58,7 @@ kubectl run order-service-smoke --rm -n prod --restart=Never \
 External verification via ingress:
 
 ```bash
-curl -fsSL https://chinthika-rathnayake.click/health
+curl -fsSL https://prod.chinthika-jayani.click/health
 ```
 
 ## 4. Rollback Procedure
@@ -79,12 +78,12 @@ kubectl rollout status deployment/order-service-prod -n prod --timeout=180s
 
 ## 5. Observability Checks
 
-| Action | Command |
-|--------|---------|
-| Prometheus targets | `kubectl get servicemonitor -n monitoring order-service-prod` |
-| Verify metrics | `curl -fsSL https://chinthika-rathnayake.click/metrics | head` |
-| Grafana access | Port-forward `kubectl port-forward svc/kube-prometheus-grafana -n monitoring 3000:80` and login (`admin/<grafana_admin_password>`) |
-| HPA status | `kubectl get hpa -n prod order-service-prod` |
+| Action             | Command                                                                                                                            |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| Prometheus targets | `kubectl get servicemonitor -n monitoring order-service-prod`                                                                      |
+| Verify metrics     | `curl -fsSL https://prod.chinthika-jayani.click/metrics                                                                            | head` |
+| Grafana access     | Port-forward `kubectl port-forward svc/kube-prometheus-grafana -n monitoring 3000:80` and login (`admin/<grafana_admin_password>`) |
+| HPA status         | `kubectl get hpa -n prod order-service-prod`                                                                                       |
 
 Prometheus alerts from kube-prometheus-stack can be tuned by overriding values in `Infrastructure/terraform/observability.tf`.
 

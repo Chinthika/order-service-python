@@ -111,15 +111,16 @@ Terraform provisions AWS networking, EKS, kube-prometheus-stack, Prometheus adap
 cd Infrastructure/terraform
 terraform init
 terraform plan \ \
-  -var "grafana_admin_password=<password>" \
-  -var "root_domain=chinthika-rathnayake.click" \
-  -var "route53_zone_id=<hosted-zone-id>" \
-  -var "prod_subdomain=@" \
+  -var "grafana_admin_password=${GRAFANA_ADMIN_PASSWORD}" \
+  -var "root_domain=chinthika-jayani.click" \
+  -var "route53_zone_id=Z0510592BC0HZCRODWLG" \
+  -var "prod_subdomain=prod" \
   -var "staging_subdomain=staging"
 terraform apply
 ```
 
-> Provide `TF_VAR_root_domain`, `TF_VAR_route53_zone_id`, and subdomain variables (defaults: `@` for prod, `staging` for non-prod) to enable ACM certificate issuance and DNS automation.
+> Provide `TF_VAR_root_domain`, `TF_VAR_route53_zone_id`, and subdomain variables (e.g. `prod` and `staging`) to enable
+> ACM certificate issuance and DNS automation.
 
 The outputs include the EKS cluster name/endpoint and monitoring namespace used by the Helm chart.
 
@@ -153,10 +154,14 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
-- `ROUTE53_ZONE_ID`
 - `ACM_CERTIFICATE_ARN`
 - `EKS_STAGING_CLUSTER_NAME`, `EKS_PROD_CLUSTER_NAME`
 - `GRAFANA_ADMIN_PASSWORD`
+
+### Notes
+
+- Workflow defaults to hosted zone `Z0510592BC0HZCRODWLG` and subdomains `prod` / `staging`.
+- Provide `ACM_CERTIFICATE_ARN` secret after running Terraform so deployments can inject the certificate.
 
 ## Observability
 

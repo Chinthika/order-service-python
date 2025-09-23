@@ -120,7 +120,7 @@ variable "prometheus_adapter_version" {
 
 variable "root_domain" {
   type        = string
-  description = "Registered root domain (e.g. chinthika-rathnayake.click)"
+  description = "Registered root domain (e.g. chinthika-jayani.click)"
 }
 
 variable "staging_subdomain" {
