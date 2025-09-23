@@ -1,0 +1,14 @@
+[MASTER]
+# Add the project root directory to Python path to fix import errors
+init-hook='import sys; import os; sys.path.append(os.getcwd())'
+
+[MESSAGES CONTROL]
+# Disable specific error codes
+disable=
+    C0114, # Missing class docstring
+    C0115, # Missing module docstring
+    C0116 # Missing function or method docstring
+
+[DESIGN]
+# Increase the maximum allowed attributes (default is 7)
+max-attributes=10

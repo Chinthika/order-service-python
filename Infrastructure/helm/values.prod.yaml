@@ -1,0 +1,126 @@
+replicaCount: 3
+
+image:
+  repository: chinthika/order-service
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets:
+  - name: dockerhub-creds
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/order-service-secrets-prod
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: /metrics
+  prometheus.io/port: "8000"
+
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  runAsNonRoot: true
+
+env:
+  - name: PYTHONPATH
+    value: /app
+  - name: ENVIRONMENT
+    value: prod
+  - name: LOG_LEVEL
+    value: INFO
+  - name: SECRETS_MANAGER_ENABLED
+    value: "true"
+  - name: AWS_REGION
+    value: us-east-1
+  - name: AWS_SECRET_NAME
+    value: order-service/prod
+  - name: METRICS_ENDPOINT
+    value: /metrics
+
+envFromSecrets:
+  - order-service-runtime
+
+envFromConfigMaps: []
+envFromConfigMapsRef: []
+
+volumeMounts: []
+volumes: []
+lifecycle: {}
+
+service:
+  type: ClusterIP
+  port: 8000
+  targetPort: 8000
+
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 20
+  periodSeconds: 15
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=60
+  certificateArn: ""
+  hosts:
+    - host: chinthika-rathnayake.click
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 70
+
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  scrapeTimeout: 10s
+  additionalLabels:
+    release: kube-prometheus
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -1,0 +1,364 @@
+name: order-service-ci-cd
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      apply_infrastructure:
+        description: "Run terraform apply after plan"
+        required: false
+        default: "false"
+      deploy_tag_override:
+        description: "Optional image tag to deploy"
+        required: false
+        default: ""
+
+concurrency:
+  group: order-service-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.11"
+  WORKING_DIRECTORY: order-service-main
+  TERRAFORM_DIRECTORY: Infrastructure/terraform
+  HELM_CHART_PATH: Infrastructure/helm
+  DOCKER_IMAGE: chinthika/order-service
+  AWS_REGION: us-east-1
+  ROOT_DOMAIN: chinthika-rathnayake.click
+  STAGING_SUBDOMAIN: staging
+  PROD_SUBDOMAIN: "@"
+
+jobs:
+  lint-and-test:
+    name: Lint, security scan & tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('dev-requirements.txt') }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r dev-requirements.txt
+
+      - name: Run pytest
+        run: |
+          pytest --maxfail=1 --disable-warnings
+
+      - name: Run bandit security scan
+        run: |
+          bandit -r src -ll
+
+      - name: Run pylint
+        run: |
+          pylint src
+
+  terraform-plan:
+    name: Terraform plan
+    runs-on: ubuntu-latest
+    needs:
+      - lint-and-test
+    defaults:
+      run:
+        working-directory: ${{ env.TERRAFORM_DIRECTORY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Terraform fmt
+        run: terraform fmt -check
+
+      - name: Terraform init
+        run: terraform init -upgrade
+
+      - name: Terraform validate
+        run: terraform validate
+
+      - name: Terraform plan
+        id: plan
+        env:
+          TF_VAR_grafana_admin_password: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+          TF_VAR_root_domain: ${{ env.ROOT_DOMAIN }}
+          TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
+          TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
+          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
+        run: terraform plan -input=false -out=tfplan.binary
+
+      - name: Upload plan output
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: ${{ env.TERRAFORM_DIRECTORY }}/tfplan.binary
+        continue-on-error: true
+
+  terraform-apply:
+    name: Terraform apply
+    runs-on: ubuntu-latest
+    needs:
+      - terraform-plan
+    if: github.event_name == 'workflow_dispatch' && inputs.apply_infrastructure == 'true'
+    defaults:
+      run:
+        working-directory: ${{ env.TERRAFORM_DIRECTORY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+
+      - name: Terraform init
+        run: terraform init -upgrade
+
+      - name: Terraform apply
+        env:
+          TF_VAR_grafana_admin_password: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+          TF_VAR_root_domain: ${{ env.ROOT_DOMAIN }}
+          TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
+          TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
+          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
+        run: terraform apply -auto-approve
+
+  build-and-push-image:
+    name: Build and push container image
+    runs-on: ubuntu-latest
+    needs:
+      - lint-and-test
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine image tag
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.deploy_tag_override }}" ]; then
+            echo "image_tag=${{ inputs.deploy_tag_override }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "image_tag=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Infrastructure/Dockerfile
+          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.image_tag }}
+            ${{ env.DOCKER_IMAGE }}:latest
+
+  deploy-staging:
+    name: Deploy to staging
+    runs-on: ubuntu-latest
+    needs:
+      - build-and-push-image
+      - terraform-plan
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: staging
+    env:
+      IMAGE_TAG: ${{ needs.build-and-push-image.outputs.image_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.29.2
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Configure kubeconfig
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_STAGING_CLUSTER_NAME }}
+
+      - name: Create/update image pull secret
+        run: |
+          kubectl create namespace staging --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret docker-registry dockerhub-creds \
+            --namespace staging \
+            --docker-server=https://index.docker.io/v1/ \
+            --docker-username=${{ secrets.DOCKERHUB_USERNAME }} \
+            --docker-password=${{ secrets.DOCKERHUB_TOKEN }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy chart
+        run: |
+          helm upgrade --install order-service-staging ${{ env.HELM_CHART_PATH }} \
+            --namespace staging \
+            --create-namespace \
+            -f ${{ env.HELM_CHART_PATH }}/values.staging.yaml \
+            --set image.tag=${{ env.IMAGE_TAG }} \
+            --set image.repository=${{ env.DOCKER_IMAGE }} \
+            --set ingress.certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }}
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/order-service-staging -n staging --timeout=180s
+
+      - name: Smoke test endpoint
+        run: |
+          kubectl run order-service-smoke --rm -n staging --restart=Never --image=curlimages/curl:8.5.0 -- \
+            curl --fail --retry 5 --retry-delay 5 http://order-service-staging.staging.svc.cluster.local:8000/health
+
+  prod-approval:
+    name: Production promotion gate
+    runs-on: ubuntu-latest
+    needs:
+      - deploy-staging
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Await approval
+        run: echo "Production deployment will begin after environment approval."
+
+  deploy-production:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    needs:
+      - prod-approval
+      - build-and-push-image
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://chinthika-rathnayake.click
+    env:
+      IMAGE_TAG: ${{ needs.build-and-push-image.outputs.image_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.29.2
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Configure kubeconfig
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_PROD_CLUSTER_NAME }}
+
+      - name: Create/update image pull secret
+        run: |
+          kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create secret docker-registry dockerhub-creds \
+            --namespace prod \
+            --docker-server=https://index.docker.io/v1/ \
+            --docker-username=${{ secrets.DOCKERHUB_USERNAME }} \
+            --docker-password=${{ secrets.DOCKERHUB_TOKEN }} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Deploy chart
+        run: |
+          helm upgrade --install order-service-prod ${{ env.HELM_CHART_PATH }} \
+            --namespace prod \
+            --create-namespace \
+            -f ${{ env.HELM_CHART_PATH }}/values.prod.yaml \
+            --set image.tag=${{ env.IMAGE_TAG }} \
+            --set image.repository=${{ env.DOCKER_IMAGE }} \
+            --set ingress.certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }}
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/order-service-prod -n prod --timeout=180s
+
+  rollback-on-failure:
+    name: Roll back production on failure
+    runs-on: ubuntu-latest
+    needs:
+      - deploy-production
+    if: failure()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.29.2
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Configure kubeconfig
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_PROD_CLUSTER_NAME }}
+
+      - name: Determine previous revision
+        id: history
+        run: |
+          set -e
+          PREV=$(helm history order-service-prod --namespace prod --output json | jq '.[-2].revision // empty')
+          if [ -z "$PREV" ]; then
+            echo "previous_revision=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "previous_revision=$PREV" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Execute rollback
+        if: steps.history.outputs.previous_revision != '0'
+        run: |
+          helm rollback order-service-prod ${{ steps.history.outputs.previous_revision }} --namespace prod --cleanup-on-fail
+
+      - name: Log rollback skipped
+        if: steps.history.outputs.previous_revision == '0'
+        run: echo "No previous revision available for rollback."
