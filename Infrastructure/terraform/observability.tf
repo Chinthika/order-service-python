@@ -38,7 +38,7 @@ resource "helm_release" "kube_prometheus_stack" {
     })
   ]
 
-  timeout = "10m"
+  timeout = "10"
 
   depends_on = [module.eks]
 }
