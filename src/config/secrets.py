@@ -19,15 +19,14 @@ class SecretRetrievalError(RuntimeError):
     """Raised when secret material cannot be loaded."""
 
 
-# ignore: R0903 # Too few public methods
-class AwsSecretsManager:
+class AwsSecretsManager:  # pylint: disable=too-few-public-methods
     """Simple wrapper around the AWS Secrets Manager API."""
 
     def __init__(
-        self,
-        region_name: Optional[str],
-        profile_name: Optional[str] = None,
-        client: Optional[Any] = None,
+            self,
+            region_name: Optional[str],
+            profile_name: Optional[str] = None,
+            client: Optional[Any] = None,
     ) -> None:
         session_kwargs: Dict[str, Any] = {}
         if profile_name:
