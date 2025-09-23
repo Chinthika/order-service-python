@@ -106,6 +106,9 @@ jobs:
           TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
           TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
           TF_VAR_route53_zone_id: ${{ env.ROUTE53_ZONE_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
         run: terraform plan -input=false -out=tfplan.binary
 
       - name: Upload plan output
@@ -144,6 +147,9 @@ jobs:
           TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
           TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
           TF_VAR_route53_zone_id: ${{ env.ROUTE53_ZONE_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
         run: terraform apply -auto-approve
 
   build-and-push-image:
