@@ -155,13 +155,14 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
 - `ACM_CERTIFICATE_ARN`
-- `EKS_STAGING_CLUSTER_NAME`, `EKS_PROD_CLUSTER_NAME`
 - `GRAFANA_ADMIN_PASSWORD`
 
 ### Notes
 
 - Workflow defaults to hosted zone `Z0510592BC0HZCRODWLG` and subdomains `prod` / `staging`.
 - Provide `ACM_CERTIFICATE_ARN` secret after running Terraform so deployments can inject the certificate.
+- Deployments target fixed EKS clusters: `order-service-staging-eks` for staging and `order-service-prod-eks` for
+  production.
 
 ## Observability
 

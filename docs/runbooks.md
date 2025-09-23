@@ -16,14 +16,13 @@
 | `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` | Push Docker images |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | IAM user with EKS, Route53 & Secrets Manager access |
 | `ACM_CERTIFICATE_ARN` | Certificate ARN injected into Helm deploys |
-| `EKS_STAGING_CLUSTER_NAME`, `EKS_PROD_CLUSTER_NAME` | Cluster names used by `aws eks update-kubeconfig` |
 | `GRAFANA_ADMIN_PASSWORD` | Injected into Terraform for kube-prometheus-stack |
 
 ## 2. Manual Deployment (Fallback)
 
 ```bash
 # Authenticate to AWS & configure kubectl
-aws eks update-kubeconfig --region us-east-1 --name <cluster-name>
+aws eks update-kubeconfig --region us-east-1 --name order-service-prod-eks
 
 # Ensure Docker Hub secret exists for the namespace
 kubectl create namespace prod --dry-run=client -o yaml | kubectl apply -f -
@@ -70,7 +69,7 @@ If the production rollout fails, the `rollback-on-failure` job triggers automati
 ### Manual (when automation is unavailable)
 
 ```bash
-aws eks update-kubeconfig --region us-east-1 --name <prod-cluster>
+aws eks update-kubeconfig --region us-east-1 --name order-service-prod-eks
 helm history order-service-prod --namespace prod
 helm rollback order-service-prod <previous-revision> --namespace prod --cleanup-on-fail
 kubectl rollout status deployment/order-service-prod -n prod --timeout=180s

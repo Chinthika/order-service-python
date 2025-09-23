@@ -33,6 +33,8 @@ env:
   STAGING_SUBDOMAIN: staging
   PROD_SUBDOMAIN: prod
   ROUTE53_ZONE_ID: Z0510592BC0HZCRODWLG
+  EKS_STAGING_CLUSTER_NAME: order-service-staging-eks
+  EKS_PROD_CLUSTER_NAME: order-service-prod-eks
 
 jobs:
   lint-and-test:
@@ -215,7 +217,7 @@ jobs:
           version: v3.14.4
 
       - name: Configure kubeconfig
-        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_STAGING_CLUSTER_NAME }}
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_STAGING_CLUSTER_NAME }}
 
       - name: Create/update image pull secret
         run: |
@@ -289,7 +291,7 @@ jobs:
           version: v3.14.4
 
       - name: Configure kubeconfig
-        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_PROD_CLUSTER_NAME }}
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_PROD_CLUSTER_NAME }}
 
       - name: Create/update image pull secret
         run: |
@@ -342,7 +344,7 @@ jobs:
           version: v3.14.4
 
       - name: Configure kubeconfig
-        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_PROD_CLUSTER_NAME }}
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_PROD_CLUSTER_NAME }}
 
       - name: Determine previous revision
         id: history
