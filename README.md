@@ -113,7 +113,7 @@ terraform init
 terraform plan \ \
   -var "grafana_admin_password=${GRAFANA_ADMIN_PASSWORD}" \
   -var "root_domain=chinthika-jayani.click" \
-  -var "route53_zone_id=Z0510592BC0HZCRODWLG" \
+  -var "route53_zone_id=<route53-zone-id>" \
   -var "prod_subdomain=prod" \
   -var "staging_subdomain=staging"
 terraform apply
@@ -154,15 +154,17 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
+- `ROUTE53_ZONE_ID`
 - `ACM_CERTIFICATE_ARN`
 - `GRAFANA_ADMIN_PASSWORD`
 
 ### Notes
 
-- Workflow defaults to hosted zone `Z0510592BC0HZCRODWLG` and subdomains `prod` / `staging`.
 - Provide `ACM_CERTIFICATE_ARN` secret after running Terraform so deployments can inject the certificate.
 - Deployments target fixed EKS clusters: `order-service-staging-eks` for staging and `order-service-prod-eks` for
   production.
+- Terraform defaults to a single `t3.micro` managed node (min 1, max 2) to stay within the AWS free tier; adjust the
+  node variables if you require additional capacity.
 
 ## Observability
 

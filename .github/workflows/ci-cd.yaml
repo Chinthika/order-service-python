@@ -32,7 +32,6 @@ env:
   ROOT_DOMAIN: chinthika-jayani.click
   STAGING_SUBDOMAIN: staging
   PROD_SUBDOMAIN: prod
-  ROUTE53_ZONE_ID: Z0510592BC0HZCRODWLG
   EKS_STAGING_CLUSTER_NAME: order-service-staging-eks
   EKS_PROD_CLUSTER_NAME: order-service-prod-eks
 
@@ -105,7 +104,7 @@ jobs:
           TF_VAR_root_domain: ${{ env.ROOT_DOMAIN }}
           TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
           TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
-          TF_VAR_route53_zone_id: ${{ env.ROUTE53_ZONE_ID }}
+          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}
@@ -146,7 +145,7 @@ jobs:
           TF_VAR_root_domain: ${{ env.ROOT_DOMAIN }}
           TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
           TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
-          TF_VAR_route53_zone_id: ${{ env.ROUTE53_ZONE_ID }}
+          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ env.AWS_REGION }}

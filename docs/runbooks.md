@@ -11,12 +11,13 @@
 
 ### Required Secrets
 
-| Secret | Purpose |
-|--------|---------|
-| `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` | Push Docker images |
+| Secret                                       | Purpose                                             |
+|----------------------------------------------|-----------------------------------------------------|
+| `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`      | Push Docker images                                  |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | IAM user with EKS, Route53 & Secrets Manager access |
-| `ACM_CERTIFICATE_ARN` | Certificate ARN injected into Helm deploys |
-| `GRAFANA_ADMIN_PASSWORD` | Injected into Terraform for kube-prometheus-stack |
+| `ROUTE53_ZONE_ID`                            | Hosted zone ID used by Terraform/external-dns       |
+| `ACM_CERTIFICATE_ARN`                        | Certificate ARN injected into Helm deploys          |
+| `GRAFANA_ADMIN_PASSWORD`                     | Injected into Terraform for kube-prometheus-stack   |
 
 ## 2. Manual Deployment (Fallback)
 
