@@ -61,7 +61,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          pytest --maxfail=1 --disable-warnings
+          python -m pytest --maxfail=1 --disable-warnings
 
       - name: Run bandit security scan
         run: |
