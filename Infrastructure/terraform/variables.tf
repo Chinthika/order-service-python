@@ -49,7 +49,7 @@ variable "public_subnets" {
 variable "kubernetes_version" {
   type        = string
   description = "EKS control plane Kubernetes version"
-  default     = "1.29"
+  default     = "1.31"
 }
 
 variable "node_group_min_size" {

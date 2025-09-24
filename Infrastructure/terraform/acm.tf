@@ -1,7 +1,12 @@
+locals {
+  acm_primary_domain = var.environment == "prod" ? "${var.prod_subdomain}.${var.root_domain}" : "${var.staging_subdomain}.${var.root_domain}"
+  acm_sans           = var.environment == "prod" ? [var.root_domain] : []
+}
+
 resource "aws_acm_certificate" "ingress" {
-  domain_name               = var.root_domain
+  domain_name               = local.acm_primary_domain
   validation_method         = "DNS"
-  subject_alternative_names = distinct([local.prod_hostname, local.staging_hostname])
+  subject_alternative_names = local.acm_sans
 
   lifecycle {
     create_before_destroy = true

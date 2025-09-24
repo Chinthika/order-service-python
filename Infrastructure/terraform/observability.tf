@@ -40,7 +40,10 @@ resource "helm_release" "kube_prometheus_stack" {
 
   timeout = "10"
 
-  depends_on = [module.eks]
+  depends_on = [
+    module.eks,
+    null_resource.wait_for_cluster
+  ]
 }
 
 
@@ -64,5 +67,9 @@ resource "helm_release" "prometheus_adapter" {
     })
   ]
 
-  depends_on = [helm_release.kube_prometheus_stack]
+  depends_on = [
+    module.eks,
+    null_resource.wait_for_cluster,
+    helm_release.kube_prometheus_stack
+  ]
 }
