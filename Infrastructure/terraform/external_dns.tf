@@ -56,14 +56,14 @@ resource "aws_iam_role_policy" "external_dns" {
 }
 
 resource "helm_release" "external_dns" {
-  name       = "external-dns"
-  repository = "https://kubernetes-sigs.github.io/external-dns/"
-  chart      = "external-dns"
-  namespace  = "kube-system"
-  version    = var.external_dns_chart_version
-  timeout    = 900
-  wait = true
-  max_history = 3
+  name            = "external-dns"
+  repository      = "https://kubernetes-sigs.github.io/external-dns/"
+  chart           = "external-dns"
+  namespace       = "kube-system"
+  version         = var.external_dns_chart_version
+  timeout         = 900
+  wait            = true
+  max_history     = 3
   cleanup_on_fail = true
 
   set {
