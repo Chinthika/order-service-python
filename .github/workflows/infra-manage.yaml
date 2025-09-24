@@ -45,7 +45,7 @@ jobs:
       TF_BACKEND_DYNAMODB_TABLE: ${{ secrets.TF_BACKEND_DYNAMODB_TABLE }}
       NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
       NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-      NEW_RELIC_REGION: us
+      NEW_RELIC_REGION: US
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,9 +63,9 @@ jobs:
           echo "TF_VAR_route53_zone_id=${{ secrets.ROUTE53_ZONE_ID }}" >> $GITHUB_ENV
           echo "TF_VAR_grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> $GITHUB_ENV
           echo "TF_VAR_aws_region=$AWS_REGION" >> $GITHUB_ENV
-          echo "TF_VAR_new_relic_license_key=$NEW_RELIC_LICENSE_KEY" >> $GITHUB_ENV
-          echo "TF_VAR_new_relic_account_id=$NEW_RELIC_ACCOUNT_ID" >> $GITHUB_ENV
-          echo "TF_VAR_new_relic_region=$NEW_RELIC_REGION" >> $GITHUB_ENV
+          echo "TF_VAR_newrelic_license_key=$NEW_RELIC_LICENSE_KEY" >> $GITHUB_ENV
+          echo "TF_VAR_newrelic_account_id=$NEW_RELIC_ACCOUNT_ID" >> $GITHUB_ENV
+          echo "TF_VAR_newrelic_region=$NEW_RELIC_REGION" >> $GITHUB_ENV
           if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
             echo "TF_VAR_environment=staging" >> $GITHUB_ENV
             echo "TF_BACKEND_KEY=staging/terraform.tfstate" >> $GITHUB_ENV

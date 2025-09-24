@@ -95,8 +95,16 @@ variable "monitoring_namespace" {
   default     = "monitoring"
 }
 
-variable "newrelic_license_key" { type = string }
-variable "newrelic_account_id" { type = string }
+variable "newrelic_license_key" {
+  type        = string
+  description = "New Relic license key for cluster monitoring"
+}
+
+variable "newrelic_account_id" {
+  type        = string
+  description = "New Relic account ID for cluster monitoring"
+}
+
 variable "newrelic_region" { # "US" or "EU"
   type    = string
   default = "US"
