@@ -1,8 +1,12 @@
 resource "helm_release" "kube_prometheus_stack" {
-  name       = "kube-prometheus"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  version    = var.kube_prometheus_stack_version
+  name            = "kube-prometheus"
+  repository      = "https://prometheus-community.github.io/helm-charts"
+  chart           = "kube-prometheus-stack"
+  version         = var.kube_prometheus_stack_version
+  timeout         = 900
+  wait            = true
+  max_history     = 3
+  cleanup_on_fail = true
 
   namespace        = var.monitoring_namespace
   create_namespace = true
@@ -37,8 +41,6 @@ resource "helm_release" "kube_prometheus_stack" {
       }
     })
   ]
-
-  timeout = "10"
 
   depends_on = [
     module.eks,
