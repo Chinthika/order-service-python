@@ -92,18 +92,15 @@ jobs:
             terraform plan -input=false -out=tfplan.binary
           fi
 
-#      - name: Upload plan
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: terraform-plan-${{ github.run_id }}
-#          path: Infrastructure/terraform/tfplan.binary
+      - name: Upload plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ github.run_id }}
+          path: Infrastructure/terraform/tfplan.binary
 
       - name: Terraform apply
         if: github.event.inputs.action == 'create'
-        run: |
-          terraform apply -target=module.eks -auto-approve
-          aws eks wait cluster-active --name $TF_VAR_cluster_name --region $AWS_REGION
-          terraform apply -auto-approve
+        run: terraform apply -input=false tfplan.binary
 
       - name: Terraform destroy
         if: github.event.inputs.action == 'destroy'
