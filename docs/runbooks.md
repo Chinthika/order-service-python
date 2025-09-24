@@ -16,6 +16,7 @@
 | `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`      | Push Docker images                                  |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | IAM user with EKS, Route53 & Secrets Manager access |
 | `ROUTE53_ZONE_ID`                            | Hosted zone ID used by Terraform/external-dns       |
+| `TF_BACKEND_BUCKET`, `TF_BACKEND_DYNAMODB_TABLE` | Remote state storage and locking resources           |
 | `ACM_CERTIFICATE_ARN`                        | Certificate ARN injected into Helm deploys          |
 | `GRAFANA_ADMIN_PASSWORD`                     | Injected into Terraform for kube-prometheus-stack   |
 
@@ -96,11 +97,17 @@ Prometheus alerts from kube-prometheus-stack can be tuned by overriding values i
 
 ## 7. Terraform Operations
 
+### GitHub Actions
+- Trigger the `manage-infrastructure` workflow and choose the environment (`staging` / `production`) and action (`create` or `destroy`).
+- Ensure the secrets `TF_BACKEND_BUCKET`, `TF_BACKEND_DYNAMODB_TABLE`, `ROUTE53_ZONE_ID`, `GRAFANA_ADMIN_PASSWORD`, `ACM_CERTIFICATE_ARN`, and AWS credentials are populated.
+- Environment protection rules provide the manual approval step before Terraform applies changes.
+
+### Local
 - **Plan:** `terraform plan -out=tfplan.binary`
 - **Apply:** `terraform apply tfplan.binary`
 - **Destroy (non-production only):** `terraform destroy`
 
-Always provide the required variables (e.g. `grafana_admin_password`). Use a remote backend for shared state in collaborative environments.
+Always provide the required variables (e.g. `grafana_admin_password`) and backend config (`bucket`, `dynamodb_table`, `key`).
 
 ## 8. Incident Response Checklist
 

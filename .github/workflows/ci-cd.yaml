@@ -9,10 +9,6 @@ on:
       - main
   workflow_dispatch:
     inputs:
-      apply_infrastructure:
-        description: "Run terraform apply after plan"
-        required: false
-        default: "false"
       deploy_tag_override:
         description: "Optional image tag to deploy"
         required: false
@@ -25,7 +21,6 @@ concurrency:
 env:
   PYTHON_VERSION: "3.11"
   WORKING_DIRECTORY: order-service-main
-  TERRAFORM_DIRECTORY: Infrastructure/terraform
   HELM_CHART_PATH: Infrastructure/helm
   DOCKER_IMAGE: chinthika/order-service
   AWS_REGION: us-east-1
@@ -71,86 +66,6 @@ jobs:
         run: |
           pylint src
 
-  terraform-plan:
-    name: Terraform plan
-    runs-on: ubuntu-latest
-    needs:
-      - lint-and-test
-    defaults:
-      run:
-        working-directory: ${{ env.TERRAFORM_DIRECTORY }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.5
-
-      - name: Terraform fmt
-        run: terraform fmt -check
-
-      - name: Terraform init
-        run: terraform init -upgrade
-
-      - name: Terraform validate
-        run: terraform validate
-
-      - name: Terraform plan
-        id: plan
-        env:
-          TF_VAR_grafana_admin_password: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
-          TF_VAR_root_domain: ${{ env.ROOT_DOMAIN }}
-          TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
-          TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
-          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-        run: terraform plan -input=false -out=tfplan.binary
-
-      - name: Upload plan output
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-plan
-          path: ${{ env.TERRAFORM_DIRECTORY }}/tfplan.binary
-        continue-on-error: true
-
-  terraform-apply:
-    name: Terraform apply
-    runs-on: ubuntu-latest
-    needs:
-      - terraform-plan
-    if: github.event_name == 'workflow_dispatch' && inputs.apply_infrastructure == 'true'
-    defaults:
-      run:
-        working-directory: ${{ env.TERRAFORM_DIRECTORY }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.8.5
-
-      - name: Terraform init
-        run: terraform init -upgrade
-
-      - name: Terraform apply
-        env:
-          TF_VAR_grafana_admin_password: ${{ secrets.GRAFANA_ADMIN_PASSWORD }}
-          TF_VAR_root_domain: ${{ env.ROOT_DOMAIN }}
-          TF_VAR_staging_subdomain: ${{ env.STAGING_SUBDOMAIN }}
-          TF_VAR_prod_subdomain: ${{ env.PROD_SUBDOMAIN }}
-          TF_VAR_route53_zone_id: ${{ secrets.ROUTE53_ZONE_ID }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ env.AWS_REGION }}
-        run: terraform apply -auto-approve
-
   build-and-push-image:
     name: Build and push container image
     runs-on: ubuntu-latest
@@ -195,7 +110,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-and-push-image
-      - terraform-plan
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment: staging
     env:
@@ -271,7 +185,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
-      url: https://chinthika-rathnayake.click
+      url: https://prod.chinthika-jayani.click
     env:
       IMAGE_TAG: ${{ needs.build-and-push-image.outputs.image_tag }}
     steps:

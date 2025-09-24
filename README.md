@@ -143,18 +143,18 @@ The chart exposes readiness/liveness probes, configures Prometheus scraping via 
 The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 
 1. **Lint & Test:** `pytest`, `bandit`, and `pylint` against the FastAPI service.
-2. **Terraform Plan:** Validates configuration and stores the plan artifact. Optional `terraform apply` is available on manual dispatch when `apply_infrastructure=true`.
-3. **Build & Push:** Builds `Infrastructure/Dockerfile` and pushes tags (`latest` and `<sha>`) to Docker Hub.
-4. **Staging Deploy:** Uses Helm to deploy to the staging namespace and runs a smoke test pod.
-5. **Manual Promotion:** Requires approval via the GitHub Environment before production deployment.
-6. **Production Deploy:** Helm upgrade to production with ACM certificate wiring, followed by rollout validation.
-7. **Automated Rollback:** On production failure the workflow reverts to the previous Helm revision.
+2. **Build & Push:** Builds `Infrastructure/Dockerfile` and pushes tags (`latest` and `<sha>`) to Docker Hub.
+3. **Staging Deploy:** Uses Helm to deploy to the staging namespace and runs a smoke test pod.
+4. **Manual Promotion:** Requires approval via the GitHub Environment before production deployment.
+5. **Production Deploy:** Helm upgrade to production with ACM certificate wiring, followed by rollout validation.
+6. **Automated Rollback:** On production failure the workflow reverts to the previous Helm revision.
 
 ### Required GitHub Secrets
 
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
 - `ROUTE53_ZONE_ID`
+- `TF_BACKEND_BUCKET`, `TF_BACKEND_DYNAMODB_TABLE`
 - `ACM_CERTIFICATE_ARN`
 - `GRAFANA_ADMIN_PASSWORD`
 
@@ -181,3 +181,13 @@ Detailed component diagrams, deployment flow, smoke tests, and rollback procedur
 - [`docs/runbooks.md`](docs/runbooks.md)
 
 These guides cover environment bootstrapping, CI/CD behavior, operational checks, and Helm rollback commands for production incidents.
+
+## Infrastructure Workflow
+
+Use `.github/workflows/infra-manage.yaml` to provision or tear down AWS resources. Trigger the workflow manually and choose:
+
+- `environment`: `staging` or `production`
+- `action`: `create` (runs plan, waits for environment approval, then applies) or `destroy`
+
+The job uses the remote S3 backend (`TF_BACKEND_BUCKET` / `TF_BACKEND_DYNAMODB_TABLE`) and the same Terraform code as local runs. Configure GitHub environment protections to require approval before production changes.
+
