@@ -85,6 +85,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   }
 
   depends_on = [
+    module.eks,
     aws_iam_role_policy_attachment.alb_controller,
     null_resource.wait_for_cluster
   ]
