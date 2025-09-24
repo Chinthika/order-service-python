@@ -30,9 +30,16 @@ resource "aws_iam_role" "alb_controller" {
   tags = local.common_tags
 }
 
+resource "aws_iam_policy" "alb_controller" {
+  name   = "${local.cluster_name}-alb-controller"
+  policy = templatefile("${path.module}/policies/aws-load-balancer-controller.json", {
+    cluster_name = local.cluster_name
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "alb_controller" {
   role       = aws_iam_role.alb_controller.name
-  policy_arn = "arn:aws:iam::aws:policy/AWSLoadBalancerControllerIAMPolicy"
+  policy_arn = aws_iam_policy.alb_controller.arn
 }
 
 resource "helm_release" "aws_load_balancer_controller" {
