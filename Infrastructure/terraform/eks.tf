@@ -8,6 +8,8 @@ module "eks" {
   cluster_endpoint_public_access  = true
   cluster_endpoint_private_access = false
 
+  cluster_encryption_config = []
+
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
@@ -36,9 +38,8 @@ resource "aws_eks_access_entry" "cluster_admin" {
   count        = var.eks_admin_role_arn == null ? 0 : 1
   cluster_name = module.eks.cluster_name
 
-  principal_arn     = var.eks_admin_role_arn
-  kubernetes_groups = ["system:masters"]
-  type              = "STANDARD"
+  principal_arn = var.eks_admin_role_arn
+  type          = "STANDARD"
 }
 
 
