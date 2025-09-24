@@ -158,3 +158,8 @@ variable "external_dns_chart_version" {
   description = "external-dns Helm chart version"
   default     = "1.15.1"
 }
+
+variable "cluster_name" {
+  type        = string
+  description = "EKS cluster name"
+}
