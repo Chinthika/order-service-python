@@ -2,41 +2,44 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: {{ include "order-service.fullname" . }}-ingress
-{{- if or .Values.ingress.annotations .Values.ingress.certificateArn }}
+  name: {{ $full := include "order-service.fullname" . -}}{{ $full }}-ingress
+  {{- $ann := .Values.ingress.annotations }}
+  {{- if or $ann .Values.ingress.certificateArn }}
   annotations:
-{{- range $key, $value := .Values.ingress.annotations }}
-    {{ $key }}: "{{ $value }}"
-{{- end }}
-{{- if .Values.ingress.certificateArn }}
+    {{- if $ann }}
+    {{ toYaml $ann | nindent 4 }}
+    {{- end }}
+    {{- if .Values.ingress.certificateArn }}
     alb.ingress.kubernetes.io/certificate-arn: "{{ .Values.ingress.certificateArn }}"
-{{- end }}
-{{- end }}
+    {{- end }}
+  {{- end }}
 spec:
-{{- if .Values.ingress.className }}
-  ingressClassName: {{ .Values.ingress.className }}
-{{- end }}
+  {{- if .Values.ingress.className }}
+  ingressClassName: {{ .Values.ingress.className | quote }}
+  {{- end }}
   rules:
-  {{- range .Values.ingress.hosts }}
-    - host: {{ .host }}
+  {{- range $host := .Values.ingress.hosts }}
+    - host: {{ $host.host | quote }}
       http:
         paths:
-        {{- range .paths }}
-          - path: {{ .path }}
-            pathType: {{ .pathType }}
+        {{- range $path := $host.paths }}
+          - path: {{ $path.path | default "/" | quote }}
+            pathType: {{ $path.pathType | default "Prefix" }}
             backend:
               service:
-                name: {{ include "order-service.fullname" $ }}
+                name: {{ $full }}
                 port:
                   number: {{ $.Values.service.port }}
         {{- end }}
   {{- end }}
+  {{- if .Values.ingress.tls }}
   tls:
-  {{- range .Values.ingress.tls }}
+  {{- range $tls := .Values.ingress.tls }}
     - hosts:
-      {{- range .hosts }}
-        - {{ . }}
+      {{- range $h := $tls.hosts }}
+        - {{ $h | quote }}
       {{- end }}
-      secretName: {{ .secretName }}
+      secretName: {{ $tls.secretName | quote }}
+  {{- end }}
   {{- end }}
 {{- end }}
