@@ -62,11 +62,13 @@ jobs:
           if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
             echo "TF_VAR_environment=staging" >> $GITHUB_ENV
             echo "TF_BACKEND_KEY=staging/terraform.tfstate" >> $GITHUB_ENV
-             echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_STAGING }}" >> $GITHUB_ENV
+            echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_STAGING }}" >> $GITHUB_ENV
+            echo "TF_VAR_cluster_name=order-service-staging-eks" >> $GITHUB_ENV
           else
             echo "TF_VAR_environment=prod" >> $GITHUB_ENV
             echo "TF_BACKEND_KEY=production/terraform.tfstate" >> $GITHUB_ENV
-             echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_PROD }}" >> $GITHUB_ENV
+            echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_PROD }}" >> $GITHUB_ENV
+            echo "TF_VAR_cluster_name=order-service-prod-eks" >> $GITHUB_ENV
           fi
 
       - name: Terraform fmt
