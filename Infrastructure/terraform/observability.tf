@@ -62,6 +62,58 @@ resource "helm_release" "newrelic" {
     value = "false"
   }
 
+  # Resource limits
+  set {
+    name  = "newrelic-infrastructure.resources.requests.cpu"
+    value = "50m"
+  }
+  set {
+    name  = "newrelic-infrastructure.resources.requests.memory"
+    value = "100Mi"
+  }
+  set {
+    name  = "newrelic-infrastructure.resources.limits.cpu"
+    value = "200m"
+  }
+  set {
+    name  = "newrelic-infrastructure.resources.limits.memory"
+    value = "200Mi"
+  }
+
+  set {
+    name  = "kube-state-metrics.resources.requests.cpu"
+    value = "50m"
+  }
+  set {
+    name  = "kube-state-metrics.resources.requests.memory"
+    value = "100Mi"
+  }
+  set {
+    name  = "kube-state-metrics.resources.limits.cpu"
+    value = "200m"
+  }
+  set {
+    name  = "kube-state-metrics.resources.limits.memory"
+    value = "200Mi"
+  }
+
+  set {
+    name  = "nri-kubernetes.resources.requests.cpu"
+    value = "50m"
+  }
+  set {
+    name  = "nri-kubernetes.resources.requests.memory"
+    value = "100Mi"
+  }
+  set {
+    name  = "nri-kubernetes.resources.limits.cpu"
+    value = "200m"
+  }
+  set {
+    name  = "nri-kubernetes.resources.limits.memory"
+    value = "200Mi"
+  }
+
   depends_on = [
     module.eks,
     aws_eks_addon.metrics_server,
@@ -77,8 +129,44 @@ resource "helm_release" "keda" {
   create_namespace = true
   version          = "2.14.0"
 
-  timeout = 600
-  wait    = true
+  set {
+    name  = "webhooks.cert.generate"
+    value = "true"
+  }
 
-  depends_on = [module.eks, null_resource.wait_for_cluster]
+  set {
+    name  = "operator.resources.requests.cpu"
+    value = "50m"
+  }
+  set {
+    name  = "operator.resources.requests.memory"
+    value = "64Mi"
+  }
+  set {
+    name  = "operator.resources.limits.cpu"
+    value = "200m"
+  }
+  set {
+    name  = "operator.resources.limits.memory"
+    value = "128Mi"
+  }
+
+  set {
+    name  = "metricsServer.resources.requests.cpu"
+    value = "20m"
+  }
+  set {
+    name  = "metricsServer.resources.requests.memory"
+    value = "64Mi"
+  }
+  set {
+    name  = "metricsServer.resources.limits.cpu"
+    value = "100m"
+  }
+  set {
+    name  = "metricsServer.resources.limits.memory"
+    value = "128Mi"
+  }
+
+  depends_on = [module.eks]
 }
