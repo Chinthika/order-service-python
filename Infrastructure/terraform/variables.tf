@@ -62,25 +62,25 @@ variable "kubernetes_version" {
 variable "node_group_min_size" {
   type        = number
   description = "Minimum number of worker nodes"
-  default     = 6
+  default     = 3
 }
 
 variable "node_group_max_size" {
   type        = number
   description = "Maximum number of worker nodes"
-  default     = 8
+  default     = 4
 }
 
 variable "node_group_desired_size" {
   type        = number
   description = "Desired number of worker nodes"
-  default     = 6
+  default     = 3
 }
 
 variable "node_instance_types" {
   type        = list(string)
   description = "EC2 instance types backing the managed node group"
-  default     = ["t3.micro"]
+  default     = ["t3.medium"]
 }
 
 variable "node_capacity_type" {
