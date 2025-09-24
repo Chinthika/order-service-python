@@ -155,6 +155,7 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
 - `ROUTE53_ZONE_ID`
 - `TF_BACKEND_BUCKET`, `TF_BACKEND_DYNAMODB_TABLE`
+- `EKS_ADMIN_ROLE_ARN_STAGING`, `EKS_ADMIN_ROLE_ARN_PROD`
 - `ACM_CERTIFICATE_ARN`
 - `GRAFANA_ADMIN_PASSWORD`
 
@@ -163,6 +164,8 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 - Provide `ACM_CERTIFICATE_ARN` secret after running Terraform so deployments can inject the certificate.
 - Deployments target fixed EKS clusters: `order-service-staging-eks` for staging and `order-service-prod-eks` for
   production.
+- Define environment-specific IAM administration roles and store their ARNs in `EKS_ADMIN_ROLE_ARN_STAGING` and
+  `EKS_ADMIN_ROLE_ARN_PROD` so the workflow can grant Kubernetes `system:masters` access automatically.
 - Terraform defaults to a single `t3.micro` managed node (min 1, max 2) to stay within the AWS free tier; adjust the
   node variables if you require additional capacity.
 

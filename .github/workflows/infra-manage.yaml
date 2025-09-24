@@ -52,7 +52,7 @@ jobs:
         with:
           terraform_version: 1.8.5
 
-      - name: Configure Terraform variables
+      - name: "Configure Terraform variables"
         run: |
           echo "TF_VAR_root_domain=$ROOT_DOMAIN" >> $GITHUB_ENV
           echo "TF_VAR_staging_subdomain=$STAGING_SUBDOMAIN" >> $GITHUB_ENV
@@ -62,9 +62,11 @@ jobs:
           if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
             echo "TF_VAR_environment=staging" >> $GITHUB_ENV
             echo "TF_BACKEND_KEY=staging/terraform.tfstate" >> $GITHUB_ENV
+             echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_STAGING }}" >> $GITHUB_ENV
           else
             echo "TF_VAR_environment=prod" >> $GITHUB_ENV
             echo "TF_BACKEND_KEY=production/terraform.tfstate" >> $GITHUB_ENV
+             echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_PROD }}" >> $GITHUB_ENV
           fi
 
       - name: Terraform fmt

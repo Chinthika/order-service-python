@@ -30,3 +30,27 @@ module "eks" {
     }
   }
 }
+
+
+resource "aws_eks_access_entry" "cluster_admin" {
+  count        = var.eks_admin_role_arn == null ? 0 : 1
+  cluster_name = module.eks.cluster_name
+
+  principal_arn     = var.eks_admin_role_arn
+  kubernetes_groups = ["system:masters"]
+  type              = "STANDARD"
+}
+
+
+resource "aws_eks_access_policy_association" "cluster_admin" {
+  count         = var.eks_admin_role_arn == null ? 0 : 1
+  cluster_name  = module.eks.cluster_name
+  principal_arn = var.eks_admin_role_arn
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+    type = "cluster"
+  }
+
+  depends_on = [aws_eks_access_entry.cluster_admin]
+}

@@ -10,6 +10,13 @@ variable "environment" {
   default     = "prod"
 }
 
+
+variable "eks_admin_role_arn" {
+  type        = string
+  description = "IAM role ARN granted Kubernetes cluster-admin access"
+  default     = null
+}
+
 variable "aws_region" {
   type        = string
   description = "AWS region for infrastructure deployment"

@@ -17,6 +17,7 @@
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | IAM user with EKS, Route53 & Secrets Manager access |
 | `ROUTE53_ZONE_ID`                            | Hosted zone ID used by Terraform/external-dns       |
 | `TF_BACKEND_BUCKET`, `TF_BACKEND_DYNAMODB_TABLE` | Remote state storage and locking resources           |
+| `EKS_ADMIN_ROLE_ARN_STAGING`, `EKS_ADMIN_ROLE_ARN_PROD` | IAM roles granted cluster-admin rights in each env |
 | `ACM_CERTIFICATE_ARN`                        | Certificate ARN injected into Helm deploys          |
 | `GRAFANA_ADMIN_PASSWORD`                     | Injected into Terraform for kube-prometheus-stack   |
 
