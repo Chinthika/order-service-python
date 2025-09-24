@@ -21,11 +21,11 @@ resource "aws_route53_record" "certificate_validation" {
     }
   }
 
-  zone_id = var.route53_zone_id
-  name    = each.value.name
-  type    = each.value.type
-  ttl     = 60
-  records = [each.value.record]
+  zone_id         = var.route53_zone_id
+  name            = each.value.name
+  type            = each.value.type
+  ttl             = 60
+  records         = [each.value.record]
   allow_overwrite = true
 }
 
