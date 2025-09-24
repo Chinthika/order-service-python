@@ -62,19 +62,19 @@ variable "kubernetes_version" {
 variable "node_group_min_size" {
   type        = number
   description = "Minimum number of worker nodes"
-  default     = 10
+  default     = 3
 }
 
 variable "node_group_max_size" {
   type        = number
   description = "Maximum number of worker nodes"
-  default     = 12
+  default     = 6
 }
 
 variable "node_group_desired_size" {
   type        = number
   description = "Desired number of worker nodes"
-  default     = 10
+  default     = 4
 }
 
 variable "node_instance_types" {
@@ -95,34 +95,11 @@ variable "monitoring_namespace" {
   default     = "monitoring"
 }
 
-variable "grafana_admin_password" {
-  type        = string
-  description = "Initial Grafana admin password"
-  sensitive   = true
-}
-
-variable "prometheus_retention" {
-  type        = string
-  description = "Retention period for Prometheus metrics"
-  default     = "7d"
-}
-
-variable "prometheus_scrape_interval" {
-  type        = string
-  description = "Default Prometheus scrape interval"
-  default     = "30s"
-}
-
-variable "kube_prometheus_stack_version" {
-  type        = string
-  description = "Version of the kube-prometheus-stack Helm chart"
-  default     = "65.5.0"
-}
-
-variable "prometheus_adapter_version" {
-  type        = string
-  description = "Version of the prometheus-adapter Helm chart"
-  default     = "4.10.0"
+variable "newrelic_license_key" { type = string }
+variable "newrelic_account_id" { type = string }
+variable "newrelic_region" { # "US" or "EU"
+  type    = string
+  default = "US"
 }
 
 variable "root_domain" {

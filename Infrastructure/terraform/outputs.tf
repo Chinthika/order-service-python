@@ -8,16 +8,6 @@ output "cluster_endpoint" {
   value       = module.eks.cluster_endpoint
 }
 
-output "prometheus_namespace" {
-  description = "Namespace where Prometheus/Grafana are installed"
-  value       = var.monitoring_namespace
-}
-
-output "grafana_admin_user" {
-  description = "Grafana admin username"
-  value       = "admin"
-}
-
 output "prod_hostname" {
   description = "Production hostname"
   value       = local.prod_hostname

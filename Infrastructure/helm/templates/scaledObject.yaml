@@ -1,0 +1,30 @@
+{{- if .Values.autoscaling.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "order-service.fullname" . }}-nr
+  labels:
+    app.kubernetes.io/part-of: {{ include "order-service.name" . }}
+spec:
+  scaleTargetRef:
+    name: {{ include "order-service.fullname" . }}
+  minReplicaCount: {{ .Values.autoscaling.minReplicas }}
+  maxReplicaCount: {{ .Values.autoscaling.maxReplicas }}
+  triggers:
+    - type: newrelic
+      metadata:
+        account: "{{ .Values.autoscaling.newRelic.accountId }}"
+        region: "{{ .Values.autoscaling.newRelic.region }}"
+        query: "{{ .Values.autoscaling.newRelic.query }}"
+        threshold: "{{ .Values.autoscaling.newRelic.threshold }}"
+      authenticationRef:
+        name: {{ include "order-service.fullname" . }}-nr-auth
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "order-service.fullname" . }}-nr-auth
+type: Opaque
+stringData:
+  newRelicLicenseKey: {{ required "Set .Values.autoscaling.newRelic.licenseKey or provide this Secret via your delivery pipeline" .Values.autoscaling.newRelic.licenseKey | quote | default "" | quote }}
+{{- end }}

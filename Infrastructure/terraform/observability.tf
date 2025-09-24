@@ -1,73 +1,82 @@
-resource "helm_release" "kube_prometheus_stack" {
-  name       = "kube-prometheus"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  version    = var.kube_prometheus_stack_version
+resource "aws_eks_addon" "metrics_server" {
+  cluster_name = var.cluster_name
+  addon_name   = "metrics-server"
+}
 
-  namespace        = var.monitoring_namespace
+resource "helm_release" "newrelic" {
+  name             = "nri-bundle"
+  repository       = "https://helm-charts.newrelic.com"
+  chart            = "nri-bundle"
+  namespace        = "newrelic"
   create_namespace = true
+  version          = "5.0.84"
 
-  values = [
-    yamlencode({
-      grafana = {
-        adminUser     = "admin"
-        adminPassword = var.grafana_admin_password
-        persistence = {
-          enabled = false
-        }
-        sidecar = {
-          dashboards = {
-            enabled         = true
-            searchNamespace = "ALL"
-          }
-        }
-      }
+  timeout         = 900
+  wait            = true
+  atomic          = true
+  cleanup_on_fail = true
 
-      prometheus = {
-        prometheusSpec = {
-          retention      = var.prometheus_retention
-          scrapeInterval = var.prometheus_scrape_interval
-        }
-      }
+  # Required
+  set {
+    name  = "global.licenseKey"
+    value = var.newrelic_license_key
+  }
+  set {
+    name  = "global.cluster"
+    value = var.cluster_name
+  }
+  set {
+    name  = "global.lowDataMode"
+    value = "true"
+  } # cheaper/smaller footprint
 
-      alertmanager = {
-        alertmanagerSpec = {
-          replicas = 2
-        }
-      }
-    })
-  ]
+  # Region (US/EU)
+  set {
+    name  = "global.nrStaging"
+    value = "false"
+  }
+  set {
+    name  = "global.region"
+    value = var.newrelic_region
+  }
+
+  # Enable the core bits
+  set {
+    name  = "newrelic-infrastructure.enabled"
+    value = "true"
+  }
+  set {
+    name  = "kube-state-metrics.enabled"
+    value = "true"
+  }
+  set {
+    name  = "nri-metadata-injection.enabled"
+    value = "true"
+  }
+
+  # Logs (optional: disable to keep it lean)
+  set {
+    name  = "newrelic-logging.enabled"
+    value = "false"
+  }
 
   depends_on = [
     module.eks,
+    aws_eks_addon.metrics_server,
     null_resource.wait_for_cluster
   ]
 }
 
+resource "helm_release" "keda" {
+  name             = "keda"
+  repository       = "https://kedacore.github.io/charts"
+  chart            = "keda"
+  namespace        = "keda"
+  create_namespace = true
+  version          = "2.14.0"
 
-resource "helm_release" "prometheus_adapter" {
-  name       = "prometheus-adapter"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "prometheus-adapter"
-  version    = var.prometheus_adapter_version
+  timeout = 600
+  wait    = true
 
-  namespace = var.monitoring_namespace
-
-  values = [
-    yamlencode({
-      prometheus = {
-        url = format("http://kube-prometheus-kube-prometheus.%s.svc:9090", var.monitoring_namespace)
-      }
-
-      rules = {
-        default = true
-      }
-    })
-  ]
-
-  depends_on = [
-    module.eks,
-    null_resource.wait_for_cluster,
-    helm_release.kube_prometheus_stack
-  ]
+  depends_on = [module.eks, null_resource.wait_for_cluster]
 }

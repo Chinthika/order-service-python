@@ -71,6 +71,12 @@ autoscaling:
   maxReplicas: 3
   targetCPUUtilizationPercentage: 60
   targetMemoryUtilizationPercentage: null
+  newRelic:
+    accountId: "SetMeAtRuntime"
+    region: "US"
+    query: "FROM Metric SELECT rate(sum(http.server.request.count), 1 minute) WHERE appName = 'order-service' FACET podName"
+    threshold: "20"  # scale when >20 req/min per pod
+    licenseKey: "SetMeAtRuntime"
 
 serviceMonitor:
   enabled: false
