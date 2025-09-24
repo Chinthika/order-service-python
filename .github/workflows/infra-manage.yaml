@@ -92,6 +92,11 @@ jobs:
       - name: Terraform plan
         id: plan
         run: |
+          if aws eks describe-cluster --name ${{ env.TF_VAR_cluster_name }} --region ${{ env.AWS_REGION }}; then
+            echo "Cluster already exists."
+            aws eks update-kubeconfig --name ${{ env.TF_VAR_cluster_name }} --region ${{ env.AWS_REGION }}
+            exit 0
+          fi
           if [ "${{ github.event.inputs.action }}" = "destroy" ]; then
             terraform plan -destroy -input=false -out=tfplan.binary
           else
