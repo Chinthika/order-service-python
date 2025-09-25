@@ -8,7 +8,6 @@ from src.service.order_service import get_order as service_get_order
 from src.service.order_service import get_orders as service_get_orders
 from src.utils import create_response
 
-
 settings = get_settings()
 app = FastAPI(title=settings.app_name)
 
