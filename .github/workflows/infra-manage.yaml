@@ -61,7 +61,6 @@ jobs:
           echo "TF_VAR_staging_subdomain=$STAGING_SUBDOMAIN" >> $GITHUB_ENV
           echo "TF_VAR_prod_subdomain=$PROD_SUBDOMAIN" >> $GITHUB_ENV
           echo "TF_VAR_route53_zone_id=${{ secrets.ROUTE53_ZONE_ID }}" >> $GITHUB_ENV
-          echo "TF_VAR_grafana_admin_password=${{ secrets.GRAFANA_ADMIN_PASSWORD }}" >> $GITHUB_ENV
           echo "TF_VAR_aws_region=$AWS_REGION" >> $GITHUB_ENV
           echo "TF_VAR_newrelic_license_key=$NEW_RELIC_LICENSE_KEY" >> $GITHUB_ENV
           echo "TF_VAR_newrelic_account_id=$NEW_RELIC_ACCOUNT_ID" >> $GITHUB_ENV

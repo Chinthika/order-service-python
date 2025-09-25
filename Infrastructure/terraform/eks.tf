@@ -35,7 +35,7 @@ module "eks" {
 
 
 resource "aws_eks_access_entry" "cluster_admin" {
-  count        = var.eks_admin_role_arn == null ? 0 : 1
+  count        = try(length(var.eks_admin_role_arn) > 0, false) ? 1 : 0
   cluster_name = module.eks.cluster_name
 
   principal_arn = var.eks_admin_role_arn
@@ -44,7 +44,7 @@ resource "aws_eks_access_entry" "cluster_admin" {
 
 
 resource "aws_eks_access_policy_association" "cluster_admin" {
-  count         = var.eks_admin_role_arn == null ? 0 : 1
+  count         = try(length(var.eks_admin_role_arn) > 0, false) ? 1 : 0
   cluster_name  = module.eks.cluster_name
   principal_arn = var.eks_admin_role_arn
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
