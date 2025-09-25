@@ -111,6 +111,7 @@ resource "helm_release" "external_dns" {
   }
 
   depends_on = [
+    module.eks,
     aws_iam_role_policy.external_dns,
     null_resource.wait_for_cluster,
     aws_eks_access_entry.cluster_admin

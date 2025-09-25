@@ -57,6 +57,7 @@ resource "helm_release" "newrelic" {
   }
 
   depends_on = [
+    module.eks,
     aws_eks_addon.metrics_server,
     null_resource.wait_for_cluster,
     aws_eks_access_entry.cluster_admin
@@ -80,6 +81,7 @@ resource "helm_release" "keda" {
   }
 
   depends_on = [
+    module.eks,
     null_resource.wait_for_cluster,
     helm_release.newrelic,
     aws_eks_access_entry.cluster_admin
