@@ -56,6 +56,9 @@ resource "aws_iam_role_policy" "external_dns" {
 }
 
 resource "helm_release" "external_dns" {
+  count    = var.deploy_workloads ? 1 : 0
+  provider = helm.eks
+
   name       = "external-dns"
   repository = "https://kubernetes-sigs.github.io/external-dns/"
   chart      = "external-dns"

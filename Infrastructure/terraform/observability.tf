@@ -6,6 +6,9 @@ resource "aws_eks_addon" "metrics_server" {
 }
 
 resource "helm_release" "newrelic" {
+  count    = var.deploy_workloads ? 1 : 0
+  provider = helm.eks
+
   name             = "nri-bundle"
   repository       = "https://helm-charts.newrelic.com"
   chart            = "nri-bundle"
@@ -61,6 +64,9 @@ resource "helm_release" "newrelic" {
 }
 
 resource "helm_release" "keda" {
+  count    = var.deploy_workloads ? 1 : 0
+  provider = helm.eks
+
   name             = "keda"
   repository       = "https://kedacore.github.io/charts"
   chart            = "keda"
