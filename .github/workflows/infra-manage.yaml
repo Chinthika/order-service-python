@@ -91,25 +91,32 @@ jobs:
       - name: Terraform plan
         id: plan
         run: |
-          if aws eks describe-cluster --name ${{ env.TF_VAR_cluster_name }} --region ${{ env.AWS_REGION }} >> /dev/null 2>&1; then
-            echo "Cluster already exists."
-            aws eks update-kubeconfig --name ${{ env.TF_VAR_cluster_name }} --region ${{ env.AWS_REGION }}
-          fi
           if [ "${{ github.event.inputs.action }}" = "destroy" ]; then
             terraform plan -destroy -input=false -out=tfplan.binary
           else
-            terraform plan -input=false -out=tfplan.binary
+            # Stage 1 — cluster only
+            echo "TF_VAR_deploy_workloads=false" >> $GITHUB_ENV
+            terraform plan -out=tfplan.eks -input=false
+            terraform apply -input=false tfplan.eks
+          
+            # Ensure control-plane is ready
+            aws eks wait cluster-active --name "$TF_VAR_cluster_name" --region "$AWS_REGION"
+
+            # Stage 2 — workloads
+            echo "TF_VAR_deploy_workloads=true" >> $GITHUB_ENV
+            terraform plan -out=tfplan.workloads -input=false
+            terraform apply -input=false tfplan.workloads
           fi
 
-      - name: Upload plan
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-plan-${{ github.run_id }}
-          path: Infrastructure/terraform/tfplan.binary
+#      - name: Upload plan
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: terraform-plan-${{ github.run_id }}
+#          path: Infrastructure/terraform/tfplan.binary
 
-      - name: Terraform apply
-        if: github.event.inputs.action == 'create'
-        run: terraform apply -input=false tfplan.binary
+#      - name: Terraform apply
+#        if: github.event.inputs.action == 'create'
+#        run: terraform apply -input=false tfplan.binary
 
       - name: Terraform destroy
         if: github.event.inputs.action == 'destroy'

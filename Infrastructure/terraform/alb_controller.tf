@@ -43,11 +43,21 @@ resource "aws_iam_role_policy_attachment" "alb_controller" {
 }
 
 resource "helm_release" "aws_load_balancer_controller" {
+  count    = var.deploy_workloads ? 1 : 0
+  provider = helm.eks
+
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   namespace  = "kube-system"
   version    = var.alb_controller_chart_version
+
+  timeout         = 900
+  wait            = true
+  atomic          = true
+  cleanup_on_fail = true
+  max_history     = 3
+
 
   set {
     name  = "clusterName"

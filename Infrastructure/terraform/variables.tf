@@ -148,3 +148,9 @@ variable "cluster_name" {
   type        = string
   description = "EKS cluster name"
 }
+
+variable "deploy_workloads" {
+  description = "Set true to install Helm/K8s workloads. False to plan/apply EKS only."
+  type        = bool
+  default     = false
+}
