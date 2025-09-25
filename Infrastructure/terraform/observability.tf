@@ -73,5 +73,9 @@ resource "helm_release" "keda" {
     value = "true"
   }
 
-  depends_on = [module.eks]
+  depends_on = [
+    module.eks,
+    null_resource.wait_for_cluster,
+    helm_release.newrelic
+  ]
 }
