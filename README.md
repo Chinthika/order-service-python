@@ -105,18 +105,31 @@ docker run --rm -p 8000:8000 order-service
 
 ## Infrastructure as Code
 
-Terraform provisions AWS networking, EKS, kube-prometheus-stack, Prometheus adapter, and public ingress components.
+Terraform provisions AWS networking, EKS, kube-prometheus-stack, and public ingress components.
 
+Two-phase apply to avoid intermittent “cluster not accessible” during Helm/Kubernetes provider init:
+
+1) Phase 1 — create EKS and networking only
 ```bash
 cd Infrastructure/terraform
 terraform init
-terraform plan \ \
-  -var "grafana_admin_password=${GRAFANA_ADMIN_PASSWORD}" \
+terraform apply \
   -var "root_domain=chinthika-jayani.click" \
   -var "route53_zone_id=<route53-zone-id>" \
   -var "prod_subdomain=prod" \
-  -var "staging_subdomain=staging"
-terraform apply
+  -var "staging_subdomain=staging" \
+  -var "deploy_workloads=false"
+```
+
+Optionally grant your IAM role temporary admin access if needed:
+```bash
+./scripts/access-grant.sh
+```
+
+2) Phase 2 — install cluster addons and controllers
+```bash
+terraform apply \
+  -var "deploy_workloads=true"
 ```
 
 > Provide `TF_VAR_root_domain`, `TF_VAR_route53_zone_id`, and subdomain variables (e.g. `prod` and `staging`) to enable
