@@ -4,20 +4,20 @@ data "aws_iam_policy_document" "external_dns_assume" {
 
     principals {
       type        = "Federated"
-      identifiers = [module.eks.oidc_provider_arn]
+      identifiers = [var.oidc_provider_arn]
     }
 
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:sub"
+      variable = "${replace(var.cluster_oidc_issuer_url, "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:external-dns"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:aud"
+      variable = "${replace(var.cluster_oidc_issuer_url, "https://", "")}:aud"
       values   = ["sts.amazonaws.com"]
     }
   }
@@ -44,10 +44,10 @@ data "aws_iam_policy_document" "external_dns_policy" {
 }
 
 resource "aws_iam_role" "external_dns" {
-  name               = "${local.cluster_name}-external-dns"
+  name               = "${var.cluster_name}-external-dns"
   assume_role_policy = data.aws_iam_policy_document.external_dns_assume.json
 
-  tags = local.common_tags
+  tags = var.common_tags
 }
 
 resource "aws_iam_role_policy" "external_dns" {
@@ -82,7 +82,7 @@ resource "helm_release" "external_dns" {
 
   set {
     name  = "txtOwnerId"
-    value = local.cluster_name
+    value = var.cluster_name
   }
 
   set {
@@ -111,9 +111,7 @@ resource "helm_release" "external_dns" {
   }
 
   depends_on = [
-    module.eks,
     aws_iam_role_policy.external_dns,
-    null_resource.wait_for_cluster,
-    aws_eks_access_entry.cluster_admin
+    null_resource.wait_for_cluster
   ]
 }

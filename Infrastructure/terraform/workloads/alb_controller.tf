@@ -4,36 +4,36 @@ data "aws_iam_policy_document" "alb_controller_assume" {
 
     principals {
       type        = "Federated"
-      identifiers = [module.eks.oidc_provider_arn]
+      identifiers = [var.oidc_provider_arn]
     }
 
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:sub"
+      variable = "${replace(var.cluster_oidc_issuer_url, "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(module.eks.cluster_oidc_issuer_url, "https://", "")}:aud"
+      variable = "${replace(var.cluster_oidc_issuer_url, "https://", "")}:aud"
       values   = ["sts.amazonaws.com"]
     }
   }
 }
 
 resource "aws_iam_role" "alb_controller" {
-  name               = "${local.cluster_name}-alb-controller"
+  name               = "${var.cluster_name}-alb-controller"
   assume_role_policy = data.aws_iam_policy_document.alb_controller_assume.json
 
-  tags = local.common_tags
+  tags = var.common_tags
 }
 
 resource "aws_iam_policy" "alb_controller" {
-  name = "${local.cluster_name}-alb-controller"
-  policy = templatefile("${path.module}/policies/aws-load-balancer-controller.json", {
-    cluster_name = local.cluster_name
+  name = "${var.cluster_name}-alb-controller"
+  policy = templatefile("${path.module}/../policies/aws-load-balancer-controller.json", {
+    cluster_name = var.cluster_name
   })
 }
 
@@ -61,7 +61,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "clusterName"
-    value = local.cluster_name
+    value = var.cluster_name
   }
 
   set {
@@ -86,7 +86,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "vpcId"
-    value = module.vpc.vpc_id
+    value = var.vpc_id
   }
 
   set {
@@ -95,9 +95,7 @@ resource "helm_release" "aws_load_balancer_controller" {
   }
 
   depends_on = [
-    module.eks,
     aws_iam_role_policy_attachment.alb_controller,
-    null_resource.wait_for_cluster,
-    aws_eks_access_entry.cluster_admin
+    null_resource.wait_for_cluster
   ]
 }
