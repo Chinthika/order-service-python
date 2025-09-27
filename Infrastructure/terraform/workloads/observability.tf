@@ -7,7 +7,7 @@ resource "aws_eks_addon" "metrics_server" {
 
 resource "helm_release" "newrelic" {
   count    = var.deploy_workloads ? 1 : 0
-  provider = helm.eks
+  provider = helm
 
   name             = "nri-bundle"
   repository       = "https://helm-charts.newrelic.com"

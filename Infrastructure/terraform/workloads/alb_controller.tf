@@ -44,7 +44,7 @@ resource "aws_iam_role_policy_attachment" "alb_controller" {
 
 resource "helm_release" "aws_load_balancer_controller" {
   count    = var.deploy_workloads ? 1 : 0
-  provider = helm.eks
+  provider = helm
 
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
