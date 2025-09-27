@@ -64,7 +64,7 @@ resource "helm_release" "newrelic" {
 
 resource "helm_release" "keda" {
   count    = var.deploy_workloads ? 1 : 0
-  provider = helm.eks
+  provider = helm
 
   name             = "keda"
   repository       = "https://kedacore.github.io/charts"
