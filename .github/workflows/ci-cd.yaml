@@ -167,10 +167,15 @@ jobs:
       - name: Wait for rollout
         run: kubectl rollout status deployment/order-service-staging -n staging --timeout=180s
 
-      - name: Smoke test endpoint
+      - name: Smoke test endpoint (Job)
         run: |
-          kubectl run order-service-smoke --rm -n staging --restart=Never --image=curlimages/curl:8.5.0 -- \
-            curl --fail --retry 5 --retry-delay 5 http://order-service-staging.staging.svc.cluster.local:8000/health
+          kubectl -n staging delete job order-service-smoke --ignore-not-found
+          kubectl -n staging create job order-service-smoke \
+            --image=curlimages/curl:8.5.0 -- \
+            curl -fsS --retry 5 --retry-delay 5 \
+              http://order-service-staging.staging.svc.cluster.local:8000/health
+          kubectl -n staging wait --for=condition=complete --timeout=180s job/order-service-smoke
+          kubectl -n staging delete job order-service-smoke
 
   prod-approval:
     name: Production promotion gate
