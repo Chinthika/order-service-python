@@ -56,6 +56,43 @@ resource "helm_release" "newrelic" {
     value = "false"
   }
 
+  # Lower resource limits/requests for enabled New Relic components
+  # kube-state-metrics
+  set {
+    name  = "kube-state-metrics.resources.requests.cpu"
+    value = "50m"
+  }
+  set {
+    name  = "kube-state-metrics.resources.requests.memory"
+    value = "64Mi"
+  }
+  set {
+    name  = "kube-state-metrics.resources.limits.cpu"
+    value = "100m"
+  }
+  set {
+    name  = "kube-state-metrics.resources.limits.memory"
+    value = "128Mi"
+  }
+
+  # nri-metadata-injection
+  set {
+    name  = "nri-metadata-injection.resources.requests.cpu"
+    value = "50m"
+  }
+  set {
+    name  = "nri-metadata-injection.resources.requests.memory"
+    value = "64Mi"
+  }
+  set {
+    name  = "nri-metadata-injection.resources.limits.cpu"
+    value = "100m"
+  }
+  set {
+    name  = "nri-metadata-injection.resources.limits.memory"
+    value = "128Mi"
+  }
+
   depends_on = [
     aws_eks_addon.metrics_server,
     null_resource.wait_for_cluster
