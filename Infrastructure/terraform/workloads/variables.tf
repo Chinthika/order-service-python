@@ -24,11 +24,13 @@ variable "deploy_workloads" {
 }
 
 variable "alb_controller_chart_version" {
-  type = string
+  type    = string
+  default = "1.8.2"
 }
 
 variable "external_dns_chart_version" {
-  type = string
+  type    = string
+  default = "1.15.1"
 }
 
 variable "newrelic_account_id" {
