@@ -67,10 +67,26 @@ resources: {}
 
 autoscaling:
   enabled: false
+  # When true, use KEDA ScaledObject (New Relic) instead of native HPA.
+  # This must be mutually exclusive with the HPA. If enabled, HPA will not be rendered.
+  keda:
+    enabled: false
+  # Use native HPA with External metrics (requires a metrics adapter, e.g., New Relic k8s metrics adapter)
+  external:
+    enabled: false
+    # External metric name exposed by your adapter (e.g., "newrelic_query" or similar)
+    metricName: ""
+    # Optional label selectors for the external metric. Key/value map.
+    metricSelector: {}
+    # Target specification for the external metric. Use type Value or AverageValue.
+    metricTarget:
+      type: "AverageValue"
+      value: "1"
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 60
   targetMemoryUtilizationPercentage: null
+  # KEDA-only New Relic options (used if autoscaling.keda.enabled=true)
   newRelic:
     accountId: "SetMeAtRuntime"
     region: "US"
