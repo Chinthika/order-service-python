@@ -15,5 +15,16 @@ module "vpc" {
   enable_dns_support            = true
   manage_default_security_group = true
 
+  # Tags required for AWS Load Balancer Controller subnet auto-discovery
+  public_subnet_tags = {
+    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
+    "kubernetes.io/role/elb"                      = "1"
+  }
+
+  private_subnet_tags = {
+    "kubernetes.io/cluster/${local.cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb"             = "1"
+  }
+
   tags = local.common_tags
 }
