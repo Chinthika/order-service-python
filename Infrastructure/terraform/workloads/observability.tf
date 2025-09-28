@@ -50,7 +50,6 @@ resource "helm_release" "newrelic" {
   }
 
   depends_on = [
-    aws_eks_addon.metrics_server,
     null_resource.wait_for_cluster
   ]
 }
