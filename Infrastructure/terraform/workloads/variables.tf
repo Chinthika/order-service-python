@@ -20,7 +20,8 @@ variable "route53_zone_id" {
 }
 
 variable "deploy_workloads" {
-  type = bool
+  type    = bool
+  default = true
 }
 
 variable "alb_controller_chart_version" {
