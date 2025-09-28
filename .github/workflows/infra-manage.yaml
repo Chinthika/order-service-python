@@ -66,12 +66,14 @@ jobs:
       - name: Terraform fmt
         run: terraform fmt -check
 
+      - name: Set backend keys
+        run: |
+          echo "TF_BACKEND_KEY_CLUSTER=shared/cluster/terraform.tfstate" >> $GITHUB_ENV
+          echo "TF_BACKEND_KEY_WORKLOADS=shared/workloads/terraform.tfstate" >> $GITHUB_ENV
 
       - name: Terraform init - Cluster
         working-directory: Infrastructure/terraform
         run: |
-          echo "TF_BACKEND_KEY_CLUSTER=shared/cluster/terraform.tfstate" >> $GITHUB_ENV
-          echo "TF_BACKEND_KEY_WORKLOADS=shared/workloads/terraform.tfstate" >> $GITHUB_ENV
           terraform init \
             -backend-config="bucket=$TF_BACKEND_BUCKET" \
             -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
