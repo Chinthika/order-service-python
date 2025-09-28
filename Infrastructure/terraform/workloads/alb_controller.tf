@@ -4,20 +4,20 @@ data "aws_iam_policy_document" "alb_controller_assume" {
 
     principals {
       type        = "Federated"
-      identifiers = [var.oidc_provider_arn]
+      identifiers = [local.oidc_provider_arn]
     }
 
     actions = ["sts:AssumeRoleWithWebIdentity"]
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(var.cluster_oidc_issuer_url, "https://", "")}:sub"
+      variable = "${replace(local.cluster_oidc_issuer_url, "https://", "")}:sub"
       values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
     }
 
     condition {
       test     = "StringEquals"
-      variable = "${replace(var.cluster_oidc_issuer_url, "https://", "")}:aud"
+      variable = "${replace(local.cluster_oidc_issuer_url, "https://", "")}:aud"
       values   = ["sts.amazonaws.com"]
     }
   }
@@ -82,11 +82,6 @@ resource "helm_release" "aws_load_balancer_controller" {
   set {
     name  = "region"
     value = var.aws_region
-  }
-
-  set {
-    name  = "vpcId"
-    value = var.vpc_id
   }
 
   set {

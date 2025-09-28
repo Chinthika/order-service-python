@@ -107,18 +107,14 @@ docker run --rm -p 8000:8000 order-service
 
 Terraform provisions AWS networking, EKS, kube-prometheus-stack, and public ingress components.
 
-Two-phase apply to avoid intermittent “cluster not accessible” during Helm/Kubernetes provider init:
+Two-module workflow: run Terraform separately for the EKS cluster and for the workloads.
 
-1) Phase 1 — create EKS and networking only
+1) Cluster — create VPC and EKS only
 ```bash
 cd Infrastructure/terraform
 terraform init
-terraform apply \
-  -var "root_domain=chinthika-jayani.click" \
-  -var "route53_zone_id=<route53-zone-id>" \
-  -var "prod_subdomain=prod" \
-  -var "staging_subdomain=staging" \
-  -var "deploy_workloads=false"
+terraform plan -out=tfplan.cluster
+terraform apply tfplan.cluster
 ```
 
 Optionally grant your IAM role temporary admin access if needed:
@@ -126,10 +122,18 @@ Optionally grant your IAM role temporary admin access if needed:
 ./scripts/access-grant.sh
 ```
 
-2) Phase 2 — install cluster addons and controllers
+2) Workloads — install controllers and addons
 ```bash
-terraform apply \
-  -var "deploy_workloads=true"
+cd Infrastructure/terraform/workloads
+terraform init
+terraform plan -out=tfplan.workloads \
+  -var "cluster_name=<your-cluster-name>" \
+  -var "aws_region=us-east-1" \
+  -var "root_domain=chinthika-jayani.click" \
+  -var "route53_zone_id=<route53-zone-id>" \
+  -var "newrelic_license_key=<nr-license>" \
+  -var "newrelic_account_id=<nr-account>"
+terraform apply tfplan.workloads
 ```
 
 > Provide `TF_VAR_root_domain`, `TF_VAR_route53_zone_id`, and subdomain variables (e.g. `prod` and `staging`) to enable

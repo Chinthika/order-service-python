@@ -80,31 +80,73 @@ jobs:
       - name: Terraform fmt
         run: terraform fmt -check
 
-      - name: Terraform init
+      - name: Set backend keys
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
+            echo "TF_BACKEND_KEY_CLUSTER=staging/cluster/terraform.tfstate" >> $GITHUB_ENV
+            echo "TF_BACKEND_KEY_WORKLOADS=staging/workloads/terraform.tfstate" >> $GITHUB_ENV
+          else
+            echo "TF_BACKEND_KEY_CLUSTER=production/cluster/terraform.tfstate" >> $GITHUB_ENV
+            echo "TF_BACKEND_KEY_WORKLOADS=production/workloads/terraform.tfstate" >> $GITHUB_ENV
+          fi
+
+      - name: Terraform init - Cluster
+        working-directory: Infrastructure/terraform
         run: |
           terraform init \
             -backend-config="bucket=$TF_BACKEND_BUCKET" \
             -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
-            -backend-config="key=$TF_BACKEND_KEY" \
+            -backend-config="key=$TF_BACKEND_KEY_CLUSTER" \
             -backend-config="region=$AWS_REGION"
 
-      - name: Terraform plan and apply - EKS Cluster
+      - name: Terraform plan and apply - Cluster
         if: github.event.inputs.action == 'create'
+        working-directory: Infrastructure/terraform
         run: |
-          export TF_VAR_deploy_workloads=false
-          terraform plan -out=tfplan.eks -input=false
-          terraform apply -input=false tfplan.eks
+          terraform plan -out=tfplan.cluster -input=false
+          terraform apply -input=false tfplan.cluster
           
           # Ensure control-plane is ready
           aws eks wait cluster-active --name "$TF_VAR_cluster_name" --region "$AWS_REGION"
 
+      - name: Terraform init - Workloads
+        if: github.event.inputs.action == 'create'
+        working-directory: Infrastructure/terraform/workloads
+        run: |
+          terraform init \
+            -backend-config="bucket=$TF_BACKEND_BUCKET" \
+            -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
+            -backend-config="key=$TF_BACKEND_KEY_WORKLOADS" \
+            -backend-config="region=$AWS_REGION"
+
       - name: Terraform plan and apply - Workloads
         if: github.event.inputs.action == 'create'
+        working-directory: Infrastructure/terraform/workloads
         run: |
           export TF_VAR_deploy_workloads=true
           terraform plan -out=tfplan.workloads -input=false
           terraform apply -input=false tfplan.workloads
 
-      - name: Terraform plan - Destroy
+      - name: Terraform destroy - Workloads
         if: github.event.inputs.action == 'destroy'
-        run: terraform plan -destroy -input=false -out=tfplan.binary
+        working-directory: Infrastructure/terraform/workloads
+        run: |
+          terraform init \
+            -backend-config="bucket=$TF_BACKEND_BUCKET" \
+            -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
+            -backend-config="key=$TF_BACKEND_KEY_WORKLOADS" \
+            -backend-config="region=$AWS_REGION"
+          terraform plan -destroy -input=false -out=tfplan.workloads
+          terraform apply -input=false tfplan.workloads
+
+      - name: Terraform destroy - Cluster
+        if: github.event.inputs.action == 'destroy'
+        working-directory: Infrastructure/terraform
+        run: |
+          terraform init \
+            -backend-config="bucket=$TF_BACKEND_BUCKET" \
+            -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
+            -backend-config="key=$TF_BACKEND_KEY_CLUSTER" \
+            -backend-config="region=$AWS_REGION"
+          terraform plan -destroy -input=false -out=tfplan.cluster
+          terraform apply -input=false tfplan.cluster
