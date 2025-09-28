@@ -165,6 +165,8 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 5. **Production Deploy:** Helm upgrade to production with ACM certificate wiring, followed by rollout validation.
 6. **Automated Rollback:** On production failure the workflow reverts to the previous Helm revision.
 
+Note on rollback behavior: Helm upgrades use `--atomic`, which automatically rolls back a failed install/upgrade. The separate rollback step in the workflow exists to handle failures detected after Helm returns success (e.g., rollout health checks). It is optional—safe to keep for extra protection, or remove if you prefer to rely solely on `--atomic`. 
+
 ### Required GitHub Secrets
 
 - `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
@@ -178,8 +180,7 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 ### Notes
 
 - Provide `ACM_CERTIFICATE_ARN` secret after running Terraform so deployments can inject the certificate.
-- Deployments target fixed EKS clusters: `order-service-staging-eks` for staging and `order-service-prod-eks` for
-  production.
+- Deployments target a single shared EKS cluster: `order-service-shared-eks`, with separate Kubernetes namespaces `staging` and `prod`.
 - Define environment-specific IAM administration roles and store their ARNs in `EKS_ADMIN_ROLE_ARN_STAGING` and
   `EKS_ADMIN_ROLE_ARN_PROD` so the workflow can grant Kubernetes `system:masters` access automatically.
 - Terraform defaults to a single `t3.micro` managed node (min 1, max 2) to stay within the AWS free tier; adjust the

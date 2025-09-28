@@ -32,8 +32,7 @@ env:
   ROOT_DOMAIN: chinthika-jayani.click
   STAGING_SUBDOMAIN: staging
   PROD_SUBDOMAIN: prod
-  EKS_STAGING_CLUSTER_NAME: order-service-staging-eks
-  EKS_PROD_CLUSTER_NAME: order-service-prod-eks
+  EKS_CLUSTER_NAME: order-service-shared-eks
 
 jobs:
   lint-and-test:
@@ -141,7 +140,7 @@ jobs:
           version: v3.14.4
 
       - name: Configure kubeconfig
-        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_STAGING_CLUSTER_NAME }}
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_CLUSTER_NAME }}
 
       - name: Create/update image pull secret
         run: |
@@ -156,7 +155,7 @@ jobs:
       - name: Deploy chart
         run: |
           helm upgrade --install order-service-staging ${{ env.HELM_CHART_PATH }} \
-            --namespace staging \
+            --namespace staging --atomic --timeout 5m0s \
             --create-namespace \
             -f ${{ env.HELM_CHART_PATH }}/values.staging.yaml \
             --set image.tag=${{ env.IMAGE_TAG }} \
@@ -217,7 +216,7 @@ jobs:
           version: v3.14.4
 
       - name: Configure kubeconfig
-        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_PROD_CLUSTER_NAME }}
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_CLUSTER_NAME }}
 
       - name: Create/update image pull secret
         run: |
@@ -232,7 +231,7 @@ jobs:
       - name: Deploy chart
         run: |
           helm upgrade --install order-service-prod ${{ env.HELM_CHART_PATH }} \
-            --namespace prod \
+            --namespace prod --atomic --timeout 5m0s \
             --create-namespace \
             -f ${{ env.HELM_CHART_PATH }}/values.prod.yaml \
             --set image.tag=${{ env.IMAGE_TAG }} \
@@ -241,53 +240,3 @@ jobs:
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/order-service-prod -n prod --timeout=180s
-
-  rollback-on-failure:
-    name: Roll back production on failure
-    runs-on: ubuntu-latest
-    needs:
-      - deploy-production
-    if: failure()
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v4
-        with:
-          version: v1.29.2
-
-      - name: Install Helm
-        uses: azure/setup-helm@v4
-        with:
-          version: v3.14.4
-
-      - name: Configure kubeconfig
-        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_PROD_CLUSTER_NAME }}
-
-      - name: Determine previous revision
-        id: history
-        run: |
-          set -e
-          PREV=$(helm history order-service-prod --namespace prod --output json | jq '.[-2].revision // empty')
-          if [ -z "$PREV" ]; then
-            echo "previous_revision=0" >> "$GITHUB_OUTPUT"
-          else
-            echo "previous_revision=$PREV" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Execute rollback
-        if: steps.history.outputs.previous_revision != '0'
-        run: |
-          helm rollback order-service-prod ${{ steps.history.outputs.previous_revision }} --namespace prod --cleanup-on-fail
-
-      - name: Log rollback skipped
-        if: steps.history.outputs.previous_revision == '0'
-        run: echo "No previous revision available for rollback."

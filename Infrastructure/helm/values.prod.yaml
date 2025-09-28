@@ -40,9 +40,7 @@ env:
   - name: METRICS_ENDPOINT
     value: /metrics
 
-envFromSecrets:
-  - order-service-runtime
-
+envFromSecrets: []
 envFromConfigMaps: []
 envFromConfigMapsRef: []
 

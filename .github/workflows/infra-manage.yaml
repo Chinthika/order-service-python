@@ -3,13 +3,6 @@ name: manage-infrastructure
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: "Target environment"
-        required: true
-        type: choice
-        options:
-          - staging
-          - production
       action:
         description: "Terraform action"
         required: true
@@ -23,14 +16,14 @@ permissions:
   id-token: write
 
 concurrency:
-  group: infra-${{ github.event.inputs.environment }}-${{ github.event.inputs.action }}
+  group: infra-shared-${{ github.event.inputs.action }}
   cancel-in-progress: false
 
 jobs:
   terraform:
-    name: Terraform ${{ github.event.inputs.action }} (${{ github.event.inputs.environment }})
+    name: Terraform ${{ github.event.inputs.action }}
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment }}
+    environment: shared
     defaults:
       run:
         working-directory: Infrastructure/terraform
@@ -65,34 +58,20 @@ jobs:
           echo "TF_VAR_newrelic_license_key=$NEW_RELIC_LICENSE_KEY" >> $GITHUB_ENV
           echo "TF_VAR_newrelic_account_id=$NEW_RELIC_ACCOUNT_ID" >> $GITHUB_ENV
           echo "TF_VAR_newrelic_region=$NEW_RELIC_REGION" >> $GITHUB_ENV
-          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
-            echo "TF_VAR_environment=staging" >> $GITHUB_ENV
-            echo "TF_BACKEND_KEY=staging/terraform.tfstate" >> $GITHUB_ENV
-            echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_STAGING }}" >> $GITHUB_ENV
-            echo "TF_VAR_cluster_name=order-service-staging-eks" >> $GITHUB_ENV
-          else
-            echo "TF_VAR_environment=prod" >> $GITHUB_ENV
-            echo "TF_BACKEND_KEY=production/terraform.tfstate" >> $GITHUB_ENV
-            echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_PROD }}" >> $GITHUB_ENV
-            echo "TF_VAR_cluster_name=order-service-prod-eks" >> $GITHUB_ENV
-          fi
+          echo "TF_VAR_environment=shared" >> $GITHUB_ENV
+          echo "TF_BACKEND_KEY=terraform.tfstate" >> $GITHUB_ENV
+          echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_STAGING }}" >> $GITHUB_ENV
+          echo "TF_VAR_cluster_name=order-service-shared-eks" >> $GITHUB_ENV
 
       - name: Terraform fmt
         run: terraform fmt -check
 
-      - name: Set backend keys
-        run: |
-          if [ "${{ github.event.inputs.environment }}" = "staging" ]; then
-            echo "TF_BACKEND_KEY_CLUSTER=staging/cluster/terraform.tfstate" >> $GITHUB_ENV
-            echo "TF_BACKEND_KEY_WORKLOADS=staging/workloads/terraform.tfstate" >> $GITHUB_ENV
-          else
-            echo "TF_BACKEND_KEY_CLUSTER=production/cluster/terraform.tfstate" >> $GITHUB_ENV
-            echo "TF_BACKEND_KEY_WORKLOADS=production/workloads/terraform.tfstate" >> $GITHUB_ENV
-          fi
 
       - name: Terraform init - Cluster
         working-directory: Infrastructure/terraform
         run: |
+          echo "TF_BACKEND_KEY_CLUSTER=shared/cluster/terraform.tfstate" >> $GITHUB_ENV
+          echo "TF_BACKEND_KEY_WORKLOADS=shared/workloads/terraform.tfstate" >> $GITHUB_ENV
           terraform init \
             -backend-config="bucket=$TF_BACKEND_BUCKET" \
             -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
@@ -131,6 +110,7 @@ jobs:
         if: github.event.inputs.action == 'destroy'
         working-directory: Infrastructure/terraform/workloads
         run: |
+          export TF_VAR_deploy_workloads=true
           terraform init \
             -backend-config="bucket=$TF_BACKEND_BUCKET" \
             -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
@@ -143,6 +123,7 @@ jobs:
         if: github.event.inputs.action == 'destroy'
         working-directory: Infrastructure/terraform
         run: |
+          export TF_VAR_deploy_workloads=true
           terraform init \
             -backend-config="bucket=$TF_BACKEND_BUCKET" \
             -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
