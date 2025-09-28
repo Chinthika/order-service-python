@@ -9,8 +9,13 @@ on:
       - main
   workflow_dispatch:
     inputs:
+      environment:
+        description: "Deploy target (leave empty to skip deploys)"
+        required: false
+        type: choice
+        options: [ "", "staging" ]
       deploy_tag_override:
-        description: "Optional image tag to deploy"
+        description: "Optional image tag to deploy (defaults to commit SHA)"
         required: false
         default: ""
 
@@ -100,7 +105,7 @@ jobs:
         with:
           context: .
           file: Infrastructure/Dockerfile
-          push: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          push: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.environment != '') }}
           tags: |
             ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.image_tag }}
             ${{ env.DOCKER_IMAGE }}:latest
@@ -110,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-and-push-image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.environment == 'staging')
     environment: staging
     env:
       IMAGE_TAG: ${{ needs.build-and-push-image.outputs.image_tag }}
