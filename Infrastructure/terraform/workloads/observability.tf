@@ -40,7 +40,7 @@ resource "helm_release" "newrelic" {
   # Enable the core bits
   set {
     name  = "newrelic-infrastructure.enabled"
-    value = "true"
+    value = "false"
   }
   set {
     name  = "kube-state-metrics.enabled"
@@ -53,7 +53,7 @@ resource "helm_release" "newrelic" {
 
   set {
     name  = "newrelic-logging.enabled"
-    value = "true"
+    value = "false"
   }
 
   depends_on = [
