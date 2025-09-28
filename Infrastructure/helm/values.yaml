@@ -78,12 +78,6 @@ autoscaling:
     threshold: "20"  # scale when >20 req/min per pod
     licenseKey: "SetMeAtRuntime"
 
-serviceMonitor:
-  enabled: false
-  interval: 30s
-  scrapeTimeout: 10s
-  path: /metrics
-  additionalLabels: {}
 
 podDisruptionBudget:
   enabled: false

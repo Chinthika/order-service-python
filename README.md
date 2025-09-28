@@ -1,6 +1,6 @@
 # Order Service Platform
 
-A FastAPI microservice demonstrating end-to-end DevOps capabilities including automated testing, secure configuration, infrastructure-as-code for AWS EKS, observability with Prometheus/Grafana, and a GitHub Actions delivery pipeline.
+A FastAPI microservice demonstrating end-to-end DevOps capabilities including automated testing, secure configuration, infrastructure-as-code for AWS EKS, observability with New Relic, and a GitHub Actions delivery pipeline.
 
 ## Repository Layout
 
@@ -20,8 +20,7 @@ order-service/
 │   │       ├── ingress.yaml
 │   │       ├── pdb.yaml
 │   │       ├── service.yaml
-│   │       ├── serviceaccount.yaml
-│   │       └── servicemonitor.yaml
+│   │       └── serviceaccount.yaml
 │   └── terraform/                   # Terraform to provision VPC, EKS & monitoring stack
 │       ├── acm.tf
 │       ├── alb_controller.tf
@@ -61,10 +60,10 @@ order-service/
 
 - **FastAPI microservice** exposing order-management endpoints with unit and integration tests.
 - **Configuration management** via Pydantic settings with optional AWS Secrets Manager integration.
-- **Prometheus metrics** exposed on `/metrics` for scraping by kube-prometheus-stack.
+- **Metrics endpoint** exposed on `/metrics` (for troubleshooting); observability is collected with New Relic (nri-bundle).
 - **Containerisation** using a lightweight Uvicorn-based Docker image.
-- **Helm chart** supporting staging and production overlays, ServiceMonitor, HPA, PodDisruptionBudget, and IRSA-ready service accounts.
-- **Terraform** provisioning VPC, EKS cluster, managed node group, kube-prometheus-stack, Prometheus adapter, and automated public ingress (ACM + ALB + Route53).
+- **Helm chart** supporting staging and production overlays, HPA, PodDisruptionBudget, and IRSA-ready service accounts.
+- **Terraform** provisioning VPC, EKS cluster, managed node group, and automated public ingress (ACM + ALB + Route53). Observability agents (New Relic) are installed via the workloads module.
 - **Public ingress** with AWS Load Balancer Controller, ACM-issued certificate, and Route53 automation via external-dns for `staging` and production hosts.
 - **GitHub Actions CI/CD** pipeline covering linting, security scanning, tests, Terraform plan/apply, Docker build & push, staged deployments, manual promotion, smoke tests, and automated Helm rollback.
 
@@ -105,7 +104,7 @@ docker run --rm -p 8000:8000 order-service
 
 ## Infrastructure as Code
 
-Terraform provisions AWS networking, EKS, kube-prometheus-stack, and public ingress components.
+Terraform provisions AWS networking, EKS, and public ingress components. Observability is handled by New Relic agents installed via the workloads module.
 
 Two-module workflow: run Terraform separately for the EKS cluster and for the workloads.
 
@@ -153,7 +152,7 @@ helm upgrade --install order-service-staging Infrastructure/helm \
   --set image.tag=$(git rev-parse --short HEAD)
 ```
 
-The chart exposes readiness/liveness probes, configures Prometheus scraping via ServiceMonitor, and creates an HPA driven by Prometheus adapter metrics.
+The chart exposes readiness/liveness probes and creates an HPA driven by built-in Kubernetes CPU/memory metrics. Prometheus/ServiceMonitor are no longer required; telemetry is shipped by New Relic agents.
 
 ## CI/CD Pipeline
 
@@ -174,7 +173,7 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 - `TF_BACKEND_BUCKET`, `TF_BACKEND_DYNAMODB_TABLE`
 - `EKS_ADMIN_ROLE_ARN_STAGING`, `EKS_ADMIN_ROLE_ARN_PROD`
 - `ACM_CERTIFICATE_ARN`
-- `GRAFANA_ADMIN_PASSWORD`
+- `NEW_RELIC_LICENSE_KEY`, `NEW_RELIC_ACCOUNT_ID`
 
 ### Notes
 
@@ -188,10 +187,9 @@ The GitHub Actions workflow (`.github/workflows/ci-cd.yaml`) implements:
 
 ## Observability
 
-- `/metrics` endpoint exposes default FastAPI metrics through `prometheus-fastapi-instrumentator`.
-- Helm chart creates a `ServiceMonitor` consumed by kube-prometheus-stack.
-- Grafana dashboards become available via the chart with credential `admin`/`<grafana_admin_password>` set through Terraform.
-- Configure Alertmanager rules in kube-prometheus-stack for alerting needs.
+- We use New Relic for cluster and application telemetry. The Terraform workloads module installs the New Relic `nri-bundle` (kube-state-metrics, metadata injection, etc.). Provide `NEW_RELIC_LICENSE_KEY` and `NEW_RELIC_ACCOUNT_ID`.
+- The application still exposes `/metrics` for local troubleshooting, but Prometheus and ServiceMonitor are not used.
+- Dashboards, querying, and alerting should be configured in New Relic.
 
 ## Runbooks & Architecture
 

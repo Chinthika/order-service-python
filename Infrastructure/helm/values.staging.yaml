@@ -14,10 +14,7 @@ serviceAccount:
   annotations:
     eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/order-service-secrets-staging
 
-podAnnotations:
-  prometheus.io/scrape: "true"
-  prometheus.io/path: /metrics
-  prometheus.io/port: "8000"
+podAnnotations: {}
 
 podSecurityContext:
   runAsUser: 1000
@@ -108,12 +105,6 @@ autoscaling:
   targetCPUUtilizationPercentage: 65
   targetMemoryUtilizationPercentage: 75
 
-serviceMonitor:
-  enabled: true
-  interval: 30s
-  scrapeTimeout: 10s
-  additionalLabels:
-    release: kube-prometheus
 
 podDisruptionBudget:
   enabled: false
