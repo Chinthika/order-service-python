@@ -1,15 +1,44 @@
-variable "cluster_name" { type = string }
-variable "aws_region" { type = string }
-variable "common_tags" { type = map(string) default = {} }
+variable "cluster_name" {
+  type = string
+}
 
-variable "root_domain" { type = string }
-variable "route53_zone_id" { type = string }
+variable "aws_region" {
+  type = string
+}
 
-variable "deploy_workloads" { type = bool }
+variable "common_tags" {
+  type    = map(string)
+  default = {}
+}
 
-variable "alb_controller_chart_version" { type = string }
-variable "external_dns_chart_version" { type = string }
+variable "root_domain" {
+  type = string
+}
 
-variable "newrelic_account_id" { type = string }
-variable "newrelic_license_key" { type = string }
-variable "newrelic_region" { type = string }
+variable "route53_zone_id" {
+  type = string
+}
+
+variable "deploy_workloads" {
+  type = bool
+}
+
+variable "alb_controller_chart_version" {
+  type = string
+}
+
+variable "external_dns_chart_version" {
+  type = string
+}
+
+variable "newrelic_account_id" {
+  type = string
+}
+
+variable "newrelic_license_key" {
+  type = string
+}
+
+variable "newrelic_region" {
+  type = string
+}
