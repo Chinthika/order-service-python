@@ -55,10 +55,3 @@ resource "aws_eks_access_policy_association" "cluster_admin" {
 
   depends_on = [aws_eks_access_entry.cluster_admin]
 }
-
-resource "aws_eks_addon" "metrics_server" {
-  cluster_name = var.cluster_name
-  addon_name   = "metrics-server"
-
-  depends_on = [null_resource.wait_for_cluster]
-}
