@@ -130,7 +130,8 @@ terraform plan -out=tfplan.workloads \
   -var "root_domain=chinthika-jayani.click" \
   -var "route53_zone_id=<route53-zone-id>" \
   -var "newrelic_license_key=<nr-license>" \
-  -var "newrelic_account_id=<nr-account>"
+  -var "newrelic_license_key=<nr-license>" \
+  -var "newrelic_api_key=<nr-api-key>"
 terraform apply tfplan.workloads
 ```
 

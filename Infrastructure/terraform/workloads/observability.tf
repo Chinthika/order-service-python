@@ -53,9 +53,25 @@ resource "helm_release" "newrelic" {
     name  = "global.licenseKey"
     value = var.newrelic_license_key
   }
+
   set {
     name  = "global.cluster"
     value = var.cluster_name
+  }
+
+  set {
+    name  = "metrics-adapter.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "newrelic-k8s-metrics-adapter.personalAPIKey"
+    value = var.newrelic_api_key
+  }
+
+  set {
+    name  = "newrelic-k8s-metrics-adapter.config.accountID"
+    value = var.newrelic_account_id
   }
 
   # Region (US/EU)
@@ -69,6 +85,7 @@ resource "helm_release" "newrelic" {
     name  = "newrelic-infrastructure.enabled"
     value = "false"
   }
+
   set {
     name  = "kube-state-metrics.enabled"
     value = "true"

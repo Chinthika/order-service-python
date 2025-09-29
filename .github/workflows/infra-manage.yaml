@@ -37,6 +37,7 @@ jobs:
       TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
       TF_BACKEND_DYNAMODB_TABLE: ${{ secrets.TF_BACKEND_DYNAMODB_TABLE }}
       NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
       NEW_RELIC_ACCOUNT_ID: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
       NEW_RELIC_REGION: US
     steps:
@@ -57,6 +58,7 @@ jobs:
           echo "TF_VAR_aws_region=$AWS_REGION" >> $GITHUB_ENV
           echo "TF_VAR_newrelic_license_key=$NEW_RELIC_LICENSE_KEY" >> $GITHUB_ENV
           echo "TF_VAR_newrelic_account_id=$NEW_RELIC_ACCOUNT_ID" >> $GITHUB_ENV
+          echo "TF_VAR_newrelic_api_key=$NEW_RELIC_API_KEY" >> $GITHUB_ENV
           echo "TF_VAR_newrelic_region=$NEW_RELIC_REGION" >> $GITHUB_ENV
           echo "TF_VAR_environment=shared" >> $GITHUB_ENV
           echo "TF_BACKEND_KEY=terraform.tfstate" >> $GITHUB_ENV
