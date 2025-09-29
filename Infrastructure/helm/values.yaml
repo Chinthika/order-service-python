@@ -102,7 +102,7 @@ newrelic-k8s-metrics-adapter:
           SINCE 2 MINUTES AGO
       requests_per_pod:
         query: >
-          FROM Metric SELECT rate(sum(http.server.requestsPerSecond), 1 minute)
+          FROM Metric SELECT rate(count(http.server.requestsPerSecond), 1 minute)
           FACET k8s.podName
           WHERE k8s.serviceName = 'order-service-prod'
           SINCE 2 MINUTES AGO
