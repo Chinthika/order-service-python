@@ -161,9 +161,8 @@ jobs:
             --set image.tag=${{ env.IMAGE_TAG }} \
             --set image.repository=${{ env.DOCKER_IMAGE }} \
             --set ingress.certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
-            --set-string newRelic.accountId=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
-            --set-string newRelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set-string newrelic.apiKey=${{ secrets.NEW_RELIC_API_KEY }} \
+            --set-string newrelic-k8s-metrics-adapter.config.accountID=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
+            --set-string newrelic-k8s-metrics-adapter.personalAPIKey=${{ secrets.NEW_RELIC_API_KEY }} \
             --set env[6].name=NEW_RELIC_LICENSE_KEY --set env[6].value=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
             --set env[7].name=NEW_RELIC_ENABLED --set env[7].value=true \
             --set env[8].name=NEW_RELIC_APP_NAME --set env[8].value=order-service-staging \
@@ -248,9 +247,8 @@ jobs:
             --set image.tag=${{ env.IMAGE_TAG }} \
             --set image.repository=${{ env.DOCKER_IMAGE }} \
             --set ingress.certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
-            --set-string newRelic.accountId=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
-            --set-string newRelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set-string newrelic.apiKey=${{ secrets.NEW_RELIC_API_KEY }} \
+            --set-string newrelic-k8s-metrics-adapter.config.accountID=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
+            --set-string newrelic-k8s-metrics-adapter.personalAPIKey=${{ secrets.NEW_RELIC_API_KEY }} \
             --set env[6].name=NEW_RELIC_LICENSE_KEY --set env[6].value=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
             --set env[7].name=NEW_RELIC_ENABLED --set env[7].value=true \
             --set env[8].name=NEW_RELIC_APP_NAME --set env[8].value=order-service-prod \
