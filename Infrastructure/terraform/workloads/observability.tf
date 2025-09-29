@@ -104,7 +104,7 @@ resource "helm_release" "newrelic" {
   # Enable the core bits
   set {
     name  = "newrelic-infrastructure.enabled"
-    value = "false"
+    value = "true"
   }
 
   set {
