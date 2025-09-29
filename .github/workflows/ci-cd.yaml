@@ -166,7 +166,7 @@ jobs:
             --set-string newrelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
             --set env[6].name=NEW_RELIC_LICENSE_KEY --set env[6].value=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
             --set env[7].name=NEW_RELIC_ENABLED --set env[7].value=true \
-            --set env[8].name=NEW_RELIC_APP_NAME --set env[8].value=order-service-prod \
+            --set env[8].name=NEW_RELIC_APP_NAME --set env[8].value=order-service-staging \
             --set env[9].name=NEW_RELIC_DISTRIBUTED_TRACING_ENABLED --set env[9].value=true \
             --set env[10].name=NEW_RELIC_LOG --set env[10].value=stdout
 
