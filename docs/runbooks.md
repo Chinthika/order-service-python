@@ -83,8 +83,6 @@ kubectl rollout status deployment/order-service-prod -n prod --timeout=180s
 | Action             | Command                                                                                                                            |
 |--------------------|------------------------------------------------------------------------------------------------------------------------------------|
 | Prometheus targets | `kubectl get servicemonitor -n monitoring order-service-prod`                                                                      |
-| Verify metrics     | `curl -fsSL https://prod.chinthika-jayani.click/metrics                                                                            | head` |
-| Grafana access     | Port-forward `kubectl port-forward svc/kube-prometheus-grafana -n monitoring 3000:80` and login (`admin/<grafana_admin_password>`) |
 | HPA status         | `kubectl get hpa -n prod order-service-prod`                                                                                       |
 
 Prometheus alerts from kube-prometheus-stack can be tuned by overriding values in `Infrastructure/terraform/observability.tf`.
@@ -115,5 +113,5 @@ Always provide the required variables (e.g. `grafana_admin_password`) and backen
 1. Inspect GitHub Actions logs for deployment failures and review `kubectl rollout` output.
 2. Check Prometheus/Grafana alerts for error details.
 3. If necessary, trigger manual rollback (Section 4).
-4. Validate service health (`/health`, `/metrics`) after recovery.
+4. Validate service health (`/health`) after recovery.
 5. Create a post-incident ticket summarising the root cause and resolution.

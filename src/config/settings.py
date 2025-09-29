@@ -21,7 +21,6 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     enable_metrics: bool = True
-    metrics_endpoint: str = "/metrics"
 
     secrets_manager_enabled: bool = False
     aws_region: Optional[str] = None

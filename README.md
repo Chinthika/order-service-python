@@ -60,7 +60,6 @@ order-service/
 
 - **FastAPI microservice** exposing order-management endpoints with unit and integration tests.
 - **Configuration management** via Pydantic settings with optional AWS Secrets Manager integration.
-- **Metrics endpoint** exposed on `/metrics` (for troubleshooting); observability is collected with New Relic (nri-bundle).
 - **Containerisation** using a lightweight Uvicorn-based Docker image.
 - **Helm chart** supporting staging and production overlays, HPA, PodDisruptionBudget, and IRSA-ready service accounts.
 - **Terraform** provisioning VPC, EKS cluster, managed node group, and automated public ingress (ACM + ALB + Route53). Observability agents (New Relic) are installed via the workloads module.
@@ -93,7 +92,7 @@ order-service/
    ```bash
    python main.py
    ```
-   The service is available on `http://localhost:8000`, metrics on `http://localhost:8000/metrics`.
+   The service is available on `http://localhost:8000`.
 
 ### Running via Docker
 
@@ -189,7 +188,6 @@ Note on rollback behavior: Helm upgrades use `--atomic`, which automatically rol
 ## Observability
 
 - We use New Relic for cluster and application telemetry. The Terraform workloads module installs the New Relic `nri-bundle` (kube-state-metrics, metadata injection, etc.). Provide `NEW_RELIC_LICENSE_KEY` and `NEW_RELIC_ACCOUNT_ID`.
-- The application still exposes `/metrics` for local troubleshooting, but Prometheus and ServiceMonitor are not used.
 - Dashboards, querying, and alerting should be configured in New Relic.
 
 ## Runbooks & Architecture

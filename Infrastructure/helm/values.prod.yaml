@@ -37,8 +37,6 @@ env:
     value: us-east-1
   - name: AWS_SECRET_NAME
     value: order-service/prod
-  - name: METRICS_ENDPOINT
-    value: /metrics
 
 envFromSecrets: []
 envFromConfigMaps: []

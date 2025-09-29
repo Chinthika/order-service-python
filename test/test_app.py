@@ -29,9 +29,3 @@ def test_get_order_by_id():
     # Test non-existing order
     response = client.get("/orders/999")
     assert response.status_code == 404
-
-
-def test_metrics_endpoint_exposed():
-    response = client.get("/metrics")
-    assert response.status_code == 200
-    assert "http_requests_total" in response.text
