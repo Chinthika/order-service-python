@@ -3,6 +3,7 @@ apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: {{ include "order-service.fullname" . }}-nr
+  namespace: {{ .Values.namespace | default "default" }}
   labels:
     app.kubernetes.io/part-of: {{ include "order-service.name" . }}
 spec:
@@ -28,3 +29,14 @@ type: Opaque
 stringData:
   newRelicLicenseKey: {{ required "Set .Values.autoscaling.newRelic.licenseKey or provide this Secret via your delivery pipeline" .Values.autoscaling.newRelic.licenseKey | quote | default "" | quote }}
 {{- end }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "order-service.fullname" . }}-nr-auth
+  namespace: {{ .Values.namespace | default "default" }}
+spec:
+  secretTargetRef:
+    - parameter: newRelicLicenseKey
+      name: newrelic-auth
+      key: apiKey

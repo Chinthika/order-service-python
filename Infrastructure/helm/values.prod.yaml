@@ -1,4 +1,5 @@
-replicaCount: 3
+replicaCount:
+namespace: prod
 
 image:
   repository: chinthika/order-service

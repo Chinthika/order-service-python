@@ -1,4 +1,5 @@
 replicaCount: 1
+namespace: staging
 
 image:
   repository: chinthika/order-service
