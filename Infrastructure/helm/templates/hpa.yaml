@@ -1,4 +1,4 @@
-{{- if and .Values.autoscaling.enabled (not (and .Values.autoscaling.keda .Values.autoscaling.keda.enabled)) }}
+{{- if and .Values.autoscaling.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -16,23 +16,14 @@ spec:
   maxReplicas: {{ .Values.autoscaling.maxReplicas }}
   metrics:
 {{- if and .Values.autoscaling.external .Values.autoscaling.external.enabled }}
+{{- range $metricName, $metricCfg := .Values.autoscaling.external.metrics }}
     - type: External
       external:
         metric:
-          name: {{ required "Set .Values.autoscaling.external.metricName when using external metrics" .Values.autoscaling.external.metricName | quote }}
-{{- with .Values.autoscaling.external.metricSelector }}
-          selector:
-            matchLabels:
-{{- range $k, $v := . }}
-              {{ $k }}: {{ $v | quote }}
-{{- end }}
-{{- end }}
+          name: {{ $metricName | quote }}
         target:
-          type: {{ default "AverageValue" .Values.autoscaling.external.metricTarget.type }}
-{{- if or (not .Values.autoscaling.external.metricTarget.type) (eq .Values.autoscaling.external.metricTarget.type "AverageValue") }}
-          averageValue: {{ required "Set .Values.autoscaling.external.metricTarget.value when using external metrics" .Values.autoscaling.external.metricTarget.value | quote }}
-{{- else }}
-          value: {{ required "Set .Values.autoscaling.external.metricTarget.value when using external metrics" .Values.autoscaling.external.metricTarget.value | quote }}
+          type: Value
+          value: {{ $metricCfg.threshold | quote }}
 {{- end }}
 {{- else }}
     - type: Resource

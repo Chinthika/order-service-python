@@ -96,14 +96,28 @@ resources:
     memory: 512Mi
 
 autoscaling:
-  enabled: true
   minReplicas: 2
   maxReplicas: 4
   targetCPUUtilizationPercentage: 60
   targetMemoryUtilizationPercentage: 70
-  newRelic:
-    query: "FROM Metric SELECT rate(sum(http.server.request.count), 1 minute) WHERE appName = 'order-service-prod' FACET podName"
-    threshold: "15"  # scale when >20 req/min per pod
+  external:
+    metrics:
+      service_latency_p95:
+        query: >
+          FROM Metric
+          SELECT percentile(http.server.duration, 95)
+          WHERE k8s.serviceName = 'order-service-prod'
+          SINCE 2 MINUTES AGO
+        threshold: 250
+      requests_per_pod:
+        query: >
+          FROM Metric
+          SELECT rate(sum(http.server.requestsPerSecond), 1 minute)
+          FACET k8s.podName
+          WHERE k8s.serviceName = 'order-service-prod'
+          SINCE 2 MINUTES AGO
+        threshold: 20
+
 
 
 podDisruptionBudget:

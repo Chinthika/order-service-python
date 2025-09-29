@@ -5,32 +5,32 @@ image:
   pullPolicy: IfNotPresent
   tag: "latest"
 
-imagePullSecrets: []
+imagePullSecrets: [ ]
 
 serviceAccount:
   create: true
   name: ""
-  annotations: {}
+  annotations: { }
 
-podAnnotations: {}
+podAnnotations: { }
 
-podSecurityContext: {}
+podSecurityContext: { }
 
-securityContext: {}
+securityContext: { }
 
-env: []
+env: [ ]
 
-envFromSecrets: []
+envFromSecrets: [ ]
 
-envFromConfigMaps: []
+envFromConfigMaps: [ ]
 
-envFromConfigMapsRef: []
+envFromConfigMapsRef: [ ]
 
-volumeMounts: []
+volumeMounts: [ ]
 
-volumes: []
+volumes: [ ]
 
-lifecycle: {}
+lifecycle: { }
 
 service:
   type: ClusterIP
@@ -58,41 +58,23 @@ readinessProbe:
 ingress:
   enabled: false
   className: ""
-  annotations: {}
+  annotations: { }
   certificateArn: ""
-  hosts: []
-  tls: []
+  hosts: [ ]
+  tls: [ ]
 
-resources: {}
+resources: { }
 
 autoscaling:
-  enabled: false
-  # When true, use KEDA ScaledObject (New Relic) instead of native HPA.
-  # This must be mutually exclusive with the HPA. If enabled, HPA will not be rendered.
-  keda:
-    enabled: true
-  # Use native HPA with External metrics (requires a metrics adapter, e.g., New Relic k8s metrics adapter)
+  enabled: true
+  # Use native HPA with External metrics (New Relic k8s metrics adapter)
   external:
-    enabled: false
-    # External metric name exposed by your adapter (e.g., "newrelic_query" or similar)
-    metricName: ""
-    # Optional label selectors for the external metric. Key/value map.
-    metricSelector: {}
-    # Target specification for the external metric. Use type Value or AverageValue.
-    metricTarget:
-      type: "AverageValue"
-      value: "1"
+    enabled: true
+    metrics: { }
   minReplicas: 1
   maxReplicas: 3
   targetCPUUtilizationPercentage: 60
   targetMemoryUtilizationPercentage: null
-  # KEDA-only New Relic options (used if autoscaling.keda.enabled=true)
-  newRelic:
-    accountId: "SetMeAtRuntime"
-    region: "US"
-    query: "FROM Metric SELECT rate(sum(http.server.request.count), 1 minute) WHERE appName = 'order-service' FACET podName"
-    threshold: "20"  # scale when >20 req/min per pod
-    licenseKey: "SetMeAtRuntime"
 
 
 podDisruptionBudget:
@@ -100,8 +82,14 @@ podDisruptionBudget:
   minAvailable: null
   maxUnavailable: 1
 
-nodeSelector: {}
+nodeSelector: { }
 
-tolerations: []
+tolerations: [ ]
 
-affinity: {}
+affinity: { }
+
+newrelic:
+  apiKey: ""
+  licenseKey: ""
+  accountID: ""
+

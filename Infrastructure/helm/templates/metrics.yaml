@@ -1,0 +1,9 @@
+{{- if .Values.autoscaling.external.enabled }}
+newrelic-k8s-metrics-adapter:
+  enabled: true
+  personalAPIKey: {{ .Values.newrelic.apiKey | quote }}
+  config:
+    accountID: {{ .Values.newrelic.accountID | quote }}
+    externalMetrics:
+{{ toYaml .Values.autoscaling.external.metrics | indent 6 }}
+{{- end }}
