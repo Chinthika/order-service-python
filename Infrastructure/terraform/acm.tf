@@ -1,5 +1,4 @@
 locals {
-  # Create certificates for BOTH environments at the same time
   certs = {
     prod = {
       primary = "${var.prod_subdomain}.${var.root_domain}"
@@ -26,12 +25,10 @@ resource "aws_acm_certificate" "ingress" {
 }
 
 resource "aws_route53_record" "certificate_validation" {
-  # Use static keys (prod/staging) so for_each is known at plan time
   for_each = aws_acm_certificate.ingress
 
   zone_id = var.route53_zone_id
 
-  # Each cert currently has exactly one validation option; convert the set to a list and take the first element
   name = tolist(each.value.domain_validation_options)[0].resource_record_name
   type = tolist(each.value.domain_validation_options)[0].resource_record_type
   ttl  = 60
