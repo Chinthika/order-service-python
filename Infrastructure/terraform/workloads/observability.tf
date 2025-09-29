@@ -84,6 +84,11 @@ resource "helm_release" "newrelic" {
     value = "FROM Metric SELECT percentile(http.server.duration, 95) WHERE (k8s.serviceName = 'order-service-staging' AND clusterName = 'order-service-shared-eks') SINCE 2 MINUTES AGO"
   }
 
+  set {
+    name  = "newrelic-k8s-metrics-adapter.clusterFilter.enabled"
+    value = "false"
+  }
+
 
   # Region (US/EU)
   set {
