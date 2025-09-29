@@ -1,4 +1,4 @@
-CLUSTER=order-service-staging-eks
+CLUSTER=order-service-shared-eks
 PRINCIPAL=arn:aws:iam::494461918598:user/GitHubActions
 REGION=us-east-1
 
@@ -8,11 +8,11 @@ aws eks associate-access-policy \
   --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
   --access-scope type=cluster
 
-#aws eks associate-access-policy \
-#  --cluster-name "$CLUSTER" \
-#  --principal-arn arn:aws:iam::494461918598:root \
-#  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
-#  --access-scope type=cluster
+aws eks associate-access-policy \
+  --cluster-name "$CLUSTER" \
+  --principal-arn arn:aws:iam::494461918598:root \
+  --policy-arn arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy \
+  --access-scope type=cluster
 
 
 ## Create an access entry for the IAM user
