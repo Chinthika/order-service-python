@@ -98,12 +98,12 @@ newrelic-k8s-metrics-adapter:
       service_latency_p95:
         query: >
           FROM Metric SELECT percentile(http.server.duration, 95)
-          WHERE k8s.serviceName = 'order-service-prod'
+          WHERE (k8s.serviceName = 'order-service-prod')
           SINCE 2 MINUTES AGO
       requests_per_pod:
         query: >
           FROM Metric SELECT rate(count(http.server.requestsPerSecond), 1 minute)
-          WHERE k8s.serviceName = 'order-service-prod'
+          WHERE (k8s.serviceName = 'order-service-prod')
           FACET k8s.podName
           SINCE 2 MINUTES AGO
 
