@@ -29,12 +29,17 @@ resource "aws_acm_certificate" "ingress" {
 resource "aws_route53_record" "certificate_validation" {
   # Create one DNS record per certificate (each cert currently has a single validation option)
   for_each = {
-    for k, cert in aws_acm_certificate.ingress :
-    k => {
-      name  = cert.domain_validation_options[0].resource_record_name
-      type  = cert.domain_validation_options[0].resource_record_type
-      value = cert.domain_validation_options[0].resource_record_value
-    }
+    for item in flatten([
+      for key, cert in aws_acm_certificate.ingress : [
+        for dvo in cert.domain_validation_options : {
+          id    = "${key}-${dvo.resource_record_name}"
+          key   = key
+          name  = dvo.resource_record_name
+          type  = dvo.resource_record_type
+          value = dvo.resource_record_value
+        }
+      ]
+    ]) : item.id => item
   }
 
   zone_id         = var.route53_zone_id
@@ -50,6 +55,7 @@ resource "aws_acm_certificate_validation" "ingress" {
 
   certificate_arn = each.value.arn
   validation_record_fqdns = [
-    aws_route53_record.certificate_validation[each.key].fqdn
+    for r in aws_route53_record.certificate_validation : r.fqdn
+    if r.value.key == each.key
   ]
 }
