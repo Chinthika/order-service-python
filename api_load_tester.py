@@ -31,14 +31,12 @@ class APIUser(HttpUser):
     def health(self):
         self.client.get("/health", headers=self.common_headers, name="GET /health")
 
-    # --- Example business endpoint: list items/orders ---
     @task(2)
     def list_orders(self):
         # Change the path to your real endpoint if different
         self.client.get("/orders", headers=self.common_headers, name="GET /api/orders")
 
-    # --- Example read-by-id with a small id range ---
     @task(1)
     def get_order_by_id(self):
-        order_id = 1 # Change as needed or randomize within a valid range
+        order_id = 1  # Change as needed or randomize within a valid range
         self.client.get(f"/orders/{order_id}", headers=self.common_headers, name="GET /api/orders/{id}")
