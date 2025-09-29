@@ -100,6 +100,9 @@ autoscaling:
   maxReplicas: 3
   targetCPUUtilizationPercentage: 65
   targetMemoryUtilizationPercentage: 75
+  newRelic:
+    query: "FROM Metric SELECT rate(sum(http.server.request.count), 1 minute) WHERE appName = 'order-service-staging' FACET podName"
+    threshold: "20"  # scale when >20 req/min per pod
 
 
 podDisruptionBudget:

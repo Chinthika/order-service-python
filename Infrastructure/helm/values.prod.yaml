@@ -14,7 +14,7 @@ serviceAccount:
   annotations:
     eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/order-service-secrets-prod
 
-podAnnotations: {}
+podAnnotations: { }
 
 podSecurityContext:
   runAsUser: 1000
@@ -38,13 +38,13 @@ env:
   - name: AWS_SECRET_NAME
     value: order-service/prod
 
-envFromSecrets: []
-envFromConfigMaps: []
-envFromConfigMapsRef: []
+envFromSecrets: [ ]
+envFromConfigMaps: [ ]
+envFromConfigMapsRef: [ ]
 
-volumeMounts: []
-volumes: []
-lifecycle: {}
+volumeMounts: [ ]
+volumes: [ ]
+lifecycle: { }
 
 service:
   type: ClusterIP
@@ -84,7 +84,7 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
-  tls: []
+  tls: [ ]
 
 resources:
   requests:
@@ -100,14 +100,17 @@ autoscaling:
   maxReplicas: 4
   targetCPUUtilizationPercentage: 60
   targetMemoryUtilizationPercentage: 70
+  newRelic:
+    query: "FROM Metric SELECT rate(sum(http.server.request.count), 1 minute) WHERE appName = 'order-service-prod' FACET podName"
+    threshold: "15"  # scale when >20 req/min per pod
 
 
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
 
-nodeSelector: {}
+nodeSelector: { }
 
-tolerations: []
+tolerations: [ ]
 
-affinity: {}
+affinity: { }

@@ -70,7 +70,7 @@ autoscaling:
   # When true, use KEDA ScaledObject (New Relic) instead of native HPA.
   # This must be mutually exclusive with the HPA. If enabled, HPA will not be rendered.
   keda:
-    enabled: false
+    enabled: true
   # Use native HPA with External metrics (requires a metrics adapter, e.g., New Relic k8s metrics adapter)
   external:
     enabled: false
