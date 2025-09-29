@@ -132,4 +132,5 @@ newrelic-k8s-metrics-adapter:
           WHERE (k8s.serviceName = 'order-service-staging' AND clusterName = 'order-service-shared-eks')
           FACET k8s.podName
           SINCE 2 MINUTES AGO
+        valueLabel: k8s.podName
         removeClusterFilter: true
