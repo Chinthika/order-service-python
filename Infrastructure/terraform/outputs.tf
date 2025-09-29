@@ -18,7 +18,9 @@ output "staging_hostname" {
   value       = local.staging_hostname
 }
 
-output "ingress_certificate_arn" {
-  description = "ARN of the ACM certificate for ingress"
-  value       = aws_acm_certificate_validation.ingress.certificate_arn
+
+
+output "ingress_certificate_arns" {
+  description = "Map of ACM certificate ARNs for ingress, keyed by environment (staging/prod)"
+  value       = { for k, v in aws_acm_certificate_validation.ingress : k => v.certificate_arn }
 }
