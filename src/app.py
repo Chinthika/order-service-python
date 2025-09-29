@@ -14,7 +14,7 @@ app = FastAPI(title=settings.app_name)
 
 @app.get("/")
 async def root() -> dict:
-    return {"message": f"Welcome to the Order Service API - {os.getenv("ENVIRONMENT")}"}
+    return {"message": f"Welcome to the Order Service API - {os.getenv('ENVIRONMENT')}"}
 
 
 @app.get("/health")
