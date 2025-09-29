@@ -1,5 +1,6 @@
 # test app.py
 from fastapi.testclient import TestClient
+
 from src.app import app
 
 client = TestClient(app)
@@ -8,7 +9,7 @@ client = TestClient(app)
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the Order Service API"}
+    assert response.json() == {"message": "Welcome to the Order Service API - local"}
 
 
 def test_get_orders():
