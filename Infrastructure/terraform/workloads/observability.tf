@@ -143,25 +143,3 @@ resource "helm_release" "newrelic" {
     null_resource.wait_for_cluster
   ]
 }
-
-resource "helm_release" "keda" {
-  count    = var.deploy_workloads ? 1 : 0
-  provider = helm
-
-  name             = "keda"
-  repository       = "https://kedacore.github.io/charts"
-  chart            = "keda"
-  namespace        = "keda"
-  create_namespace = true
-  version          = "2.14.0"
-
-  set {
-    name  = "webhooks.cert.generate"
-    value = "true"
-  }
-
-  depends_on = [
-    null_resource.wait_for_cluster,
-    helm_release.newrelic
-  ]
-}
