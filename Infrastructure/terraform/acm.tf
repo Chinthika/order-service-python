@@ -1,28 +1,39 @@
+
 locals {
-  acm_primary_domain = var.environment == "prod" ? "${var.prod_subdomain}.${var.root_domain}" : "${var.staging_subdomain}.${var.root_domain}"
-  acm_sans           = var.environment == "prod" ? [var.root_domain] : []
+  # Create certificates for BOTH environments at the same time
+  certs = {
+    prod = {
+      primary = "${var.prod_subdomain}.${var.root_domain}"
+    }
+    staging = {
+      primary = "${var.staging_subdomain}.${var.root_domain}"
+    }
+  }
 }
 
 resource "aws_acm_certificate" "ingress" {
-  domain_name               = local.acm_primary_domain
-  validation_method         = "DNS"
-  subject_alternative_names = local.acm_sans
+  for_each          = local.certs
+  domain_name       = each.value.primary
+  validation_method = "DNS"
 
   lifecycle {
     create_before_destroy = true
   }
 
   tags = merge(local.common_tags, {
-    Name = "${var.project}-${var.environment}-certificate"
+    Environment = each.key
+    Name        = "${var.project}-${each.key}-certificate"
   })
 }
 
 resource "aws_route53_record" "certificate_validation" {
+  # Create one DNS record per certificate (each cert currently has a single validation option)
   for_each = {
-    for option in aws_acm_certificate.ingress.domain_validation_options : option.domain_name => {
-      name   = option.resource_record_name
-      type   = option.resource_record_type
-      record = option.resource_record_value
+    for k, cert in aws_acm_certificate.ingress :
+    k => {
+      name  = cert.domain_validation_options[0].resource_record_name
+      type  = cert.domain_validation_options[0].resource_record_type
+      value = cert.domain_validation_options[0].resource_record_value
     }
   }
 
@@ -30,11 +41,15 @@ resource "aws_route53_record" "certificate_validation" {
   name            = each.value.name
   type            = each.value.type
   ttl             = 60
-  records         = [each.value.record]
+  records         = [each.value.value]
   allow_overwrite = true
 }
 
 resource "aws_acm_certificate_validation" "ingress" {
-  certificate_arn         = aws_acm_certificate.ingress.arn
-  validation_record_fqdns = [for record in aws_route53_record.certificate_validation : record.fqdn]
+  for_each = aws_acm_certificate.ingress
+
+  certificate_arn = each.value.arn
+  validation_record_fqdns = [
+    aws_route53_record.certificate_validation[each.key].fqdn
+  ]
 }
