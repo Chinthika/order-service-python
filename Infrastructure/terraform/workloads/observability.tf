@@ -90,7 +90,7 @@ resource "helm_release" "newrelic" {
   }
 
   set {
-    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95.removeClusterFilter: true"
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95.removeClusterFilter"
     value = "true"
   }
 
