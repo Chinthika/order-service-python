@@ -1,4 +1,3 @@
-
 locals {
   # Create certificates for BOTH environments at the same time
   certs = {
@@ -27,26 +26,18 @@ resource "aws_acm_certificate" "ingress" {
 }
 
 resource "aws_route53_record" "certificate_validation" {
-  # Create one DNS record per certificate (each cert currently has a single validation option)
-  for_each = {
-    for item in flatten([
-      for key, cert in aws_acm_certificate.ingress : [
-        for dvo in cert.domain_validation_options : {
-          id    = "${key}-${dvo.resource_record_name}"
-          key   = key
-          name  = dvo.resource_record_name
-          type  = dvo.resource_record_type
-          value = dvo.resource_record_value
-        }
-      ]
-    ]) : item.id => item
-  }
+  # Use static keys (prod/staging) so for_each is known at plan time
+  for_each = aws_acm_certificate.ingress
 
-  zone_id         = var.route53_zone_id
-  name            = each.value.name
-  type            = each.value.type
-  ttl             = 60
-  records         = [each.value.value]
+  zone_id = var.route53_zone_id
+
+  # Each cert currently has exactly one validation option; convert the set to a list and take the first element
+  name = tolist(each.value.domain_validation_options)[0].resource_record_name
+  type = tolist(each.value.domain_validation_options)[0].resource_record_type
+  ttl  = 60
+  records = [
+    tolist(each.value.domain_validation_options)[0].resource_record_value
+  ]
   allow_overwrite = true
 }
 
@@ -55,7 +46,6 @@ resource "aws_acm_certificate_validation" "ingress" {
 
   certificate_arn = each.value.arn
   validation_record_fqdns = [
-    for r in aws_route53_record.certificate_validation : r.fqdn
-    if r.value.key == each.key
+    aws_route53_record.certificate_validation[each.key].fqdn
   ]
 }
