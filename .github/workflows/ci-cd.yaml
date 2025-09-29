@@ -161,11 +161,14 @@ jobs:
             --set image.tag=${{ env.IMAGE_TAG }} \
             --set image.repository=${{ env.DOCKER_IMAGE }} \
             --set ingress.certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
-            --set autoscaling.newRelic.accountId=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
-            --set autoscaling.newRelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set newrelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set newrelic.appName=order-service \
-            --set newrelic.environment=staging
+            --set-string autoscaling.newRelic.accountId=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
+            --set-string autoscaling.newRelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set-string newrelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set env[6].name=NEW_RELIC_LICENSE_KEY --set env[6].value=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set env[7].name=NEW_RELIC_ENABLED --set env[7].value=true \
+            --set env[8].name=NEW_RELIC_APP_NAME --set env[8].value=order-service-prod \
+            --set env[9].name=NEW_RELIC_DISTRIBUTED_TRACING_ENABLED --set env[9].value=true \
+            --set env[10].name=NEW_RELIC_LOG --set env[10].value=stdout
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/order-service-staging -n staging --timeout=180s
@@ -245,11 +248,14 @@ jobs:
             --set image.tag=${{ env.IMAGE_TAG }} \
             --set image.repository=${{ env.DOCKER_IMAGE }} \
             --set ingress.certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
-            --set autoscaling.newRelic.accountId=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
-            --set autoscaling.newRelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set newrelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set newrelic.appName=order-service \
-            --set newrelic.environment=production
+            --set-string autoscaling.newRelic.accountId=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
+            --set-string autoscaling.newRelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set-string newrelic.licenseKey=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set env[6].name=NEW_RELIC_LICENSE_KEY --set env[6].value=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
+            --set env[7].name=NEW_RELIC_ENABLED --set env[7].value=true \
+            --set env[8].name=NEW_RELIC_APP_NAME --set env[8].value=order-service-prod \
+            --set env[9].name=NEW_RELIC_DISTRIBUTED_TRACING_ENABLED --set env[9].value=true \
+            --set env[10].name=NEW_RELIC_LOG --set env[10].value=stdout
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/order-service-prod -n prod --timeout=180s
