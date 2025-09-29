@@ -41,7 +41,7 @@ resource "helm_release" "newrelic" {
   chart            = "nri-bundle"
   namespace        = "newrelic"
   create_namespace = true
-  version          = "5.0.84"
+  version          = "6.0.14"
 
   timeout         = 900
   wait            = true
