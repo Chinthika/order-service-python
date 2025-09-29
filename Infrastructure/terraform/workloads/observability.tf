@@ -76,7 +76,7 @@ resource "helm_release" "newrelic" {
 
   set {
     name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_pod.query"
-    value = "FROM Metric SELECT rate(count(http.server.requestsPerSecond), 1 minute) WHERE (k8s.serviceName = 'order-service-staging' AND clusterName = 'order-service-shared-eks') FACET k8s.podName SINCE 2 MINUTES AGO"
+    value = "FROM Metric SELECT average(http.server.requestsPerSecond) WHERE (k8s.serviceName = 'order-service-staging' AND clusterName = 'order-service-shared-eks') FACET k8s.podName SINCE 2 MINUTES AGO"
   }
 
   set {
