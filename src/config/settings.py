@@ -1,5 +1,5 @@
 """Application runtime configuration powered by environment variables."""
-
+import os
 from functools import lru_cache
 from typing import Optional
 
@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     )
 
     app_name: str = "Order Service API"
-    environment: str = "local"
+    environment: str = os.getenv("ENVIRONMENT", "local")
     log_level: str = "INFO"
 
     enable_metrics: bool = True

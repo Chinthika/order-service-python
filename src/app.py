@@ -1,5 +1,4 @@
 """FastAPI application entry point with observability hooks."""
-import os
 
 from fastapi import FastAPI, HTTPException
 
@@ -14,7 +13,7 @@ app = FastAPI(title=settings.app_name)
 
 @app.get("/")
 async def root() -> dict:
-    return {"message": f"Welcome to the Order Service API - {os.getenv('ENVIRONMENT')}"}
+    return {"message": f"Welcome to the Order Service API - {settings.environment}"}
 
 
 @app.get("/health")
