@@ -94,6 +94,5 @@ newrelic-k8s-metrics-adapter:
   personalAPIKey: "<API_KEY>"
   config:
     accountID: "<ACCOUNT_ID>"
-  removeClusterFilter: true
 
 
