@@ -20,7 +20,11 @@ resource "helm_release" "metrics_server" {
   }
   set {
     name  = "args[1]"
-    value = "--kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP"
+    value = "--kubelet-preferred-address-types=InternalIP\\,Hostname\\,ExternalIP"
+  }
+  set {
+    name  = "apiService.insecureSkipTLSVerify"
+    value = "true"
   }
 
   depends_on = [
