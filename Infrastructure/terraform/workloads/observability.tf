@@ -1,8 +1,31 @@
-resource "aws_eks_addon" "metrics_server" {
-  cluster_name = var.cluster_name
-  addon_name   = "metrics-server"
+resource "helm_release" "metrics_server" {
+  count    = var.deploy_workloads ? 1 : 0
+  provider = helm
 
-  depends_on = [null_resource.wait_for_cluster]
+  name       = "metrics-server"
+  repository = "https://kubernetes-sigs.github.io/metrics-server/"
+  chart      = "metrics-server"
+  namespace  = "kube-system"
+
+  timeout         = 600
+  wait            = true
+  atomic          = true
+  cleanup_on_fail = true
+  max_history     = 3
+
+  # Ensure reliable connectivity to kubelets in EKS
+  set {
+    name  = "args[0]"
+    value = "--kubelet-insecure-tls"
+  }
+  set {
+    name  = "args[1]"
+    value = "--kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP"
+  }
+
+  depends_on = [
+    null_resource.wait_for_cluster
+  ]
 }
 
 resource "helm_release" "newrelic" {
@@ -94,7 +117,7 @@ resource "helm_release" "newrelic" {
   }
 
   depends_on = [
-    aws_eks_addon.metrics_server,
+    helm_release.metrics_server,
     helm_release.aws_load_balancer_controller,
     null_resource.wait_for_cluster
   ]
