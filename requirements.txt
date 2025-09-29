@@ -1,7 +1,5 @@
 fastapi~=0.115.12
 uvicorn~=0.34.2
-prometheus-fastapi-instrumentator~=7.0.0
-prometheus-client~=0.21.1
 boto3~=1.35.81
 pydantic-settings~=2.7.1
 newrelic~=11.0.0

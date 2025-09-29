@@ -1,7 +1,7 @@
 """FastAPI application entry point with observability hooks."""
+import os
 
 from fastapi import FastAPI, HTTPException
-from prometheus_fastapi_instrumentator import Instrumentator
 
 from src.config import get_settings
 from src.service.order_service import get_order as service_get_order
@@ -12,32 +12,9 @@ settings = get_settings()
 app = FastAPI(title=settings.app_name)
 
 
-def _configure_metrics(instrumentation_app: FastAPI) -> None:
-    """Register Prometheus instrumentation on the FastAPI app if enabled."""
-
-    if not settings.enable_metrics:
-        return
-
-    # Avoid re-registering the metrics endpoint in testing scenarios.
-    if getattr(instrumentation_app.state, "metrics_configured", False):
-        return
-
-    Instrumentator().instrument(instrumentation_app).expose(
-        instrumentation_app,
-        endpoint=settings.metrics_endpoint,
-        include_in_schema=False,
-    )
-    instrumentation_app.state.metrics_configured = True
-
-
-@app.on_event("startup")
-async def startup_event() -> None:
-    _configure_metrics(app)
-
-
 @app.get("/")
 async def root() -> dict:
-    return {"message": "Welcome to the Order Service API"}
+    return {"message": f"Welcome to the Order Service API - {os.getenv("ENVIRONMENT")}"}
 
 
 @app.get("/health")
@@ -61,6 +38,3 @@ async def get_order_by_id(order_id: str):
 
     # return 200 if found
     return order
-
-
-_configure_metrics(app)
