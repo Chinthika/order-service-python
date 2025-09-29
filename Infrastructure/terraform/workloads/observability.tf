@@ -85,8 +85,8 @@ resource "helm_release" "newrelic" {
   }
 
   set {
-    name  = "newrelic-k8s-metrics-adapter.clusterFilter.enabled"
-    value = "false"
+    name  = "newrelic-k8s-metrics-adapter.removeClusterFilter"
+    value = "true"
   }
 
 
