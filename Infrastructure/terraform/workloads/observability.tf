@@ -85,6 +85,11 @@ resource "helm_release" "newrelic" {
   }
 
   set {
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_pod.valueLabel"
+    value = "k8s.podName"
+  }
+
+  set {
     name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95.query"
     value = "FROM Metric SELECT percentile(http.server.duration, 95) WHERE (k8s.serviceName = 'order-service-staging' AND clusterName = 'order-service-shared-eks') SINCE 2 MINUTES AGO"
   }
