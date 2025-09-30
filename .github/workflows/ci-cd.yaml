@@ -111,7 +111,6 @@ jobs:
       - name: Push docker image
         uses: docker/build-push-action@v6
         with:
-          file: Infrastructure/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.image_tag }}
