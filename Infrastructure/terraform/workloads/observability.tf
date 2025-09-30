@@ -43,7 +43,7 @@ resource "helm_release" "newrelic" {
   create_namespace = true
   version          = "6.0.14"
 
-  timeout         = 900
+  timeout         = 1200
   wait            = true
   atomic          = true
   cleanup_on_fail = true

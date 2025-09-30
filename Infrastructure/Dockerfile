@@ -13,6 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Command to run the application
-ENTRYPOINT ["newrelic-admin","run-program","uvicorn","main:app","--host","0.0.0.0","--port","8000"]
+ENTRYPOINT ["NEW_RELIC_CONFIG_FILE=newrelic.ini","newrelic-admin","run-program","uvicorn","main:app","--host","0.0.0.0","--port","8000"]
 
 EXPOSE 8000
