@@ -238,19 +238,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Create PR to main
-        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
-          commit-message: 'automated: merge develop → main'
-          branch: auto-pr-develop-to-main-${{ github.run_id }}
-          base: main
-          title: 'Automated PR: develop → main'
-          body: |
-            This PR was automatically created by GitHub Actions.
-            Triggered from branch `${{ github.ref_name }}`.
-          labels: |
-            automated
-            ci
-            deploy to production
+        run: |
+          gh pr create --base main --head develop --title "Automated PR: develop → main" --body "This PR was automatically created."
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
 
