@@ -109,7 +109,7 @@ autoscaling:
       service_latency_p95:
         threshold: 250
       requests_per_pod:
-        threshold: 20
+        threshold: 25
 
 
 
@@ -128,13 +128,15 @@ newrelic-k8s-metrics-adapter:
     externalMetrics:
       service_latency_p95:
         query: >
-          FROM Metric SELECT percentile(http.server.duration, 95)
-          WHERE (k8s.deploymentName = 'order-service-staging' AND k8s.clusterName = 'order-service-shared-eks')
-          SINCE 2 MINUTES AGO
+          SELECT percentile(duration,95) * 50000
+          FROM Transaction
+          WHERE appName = 'order-service-staging'
+          SINCE 2 minutes ago
         removeClusterFilter: true
       requests_per_pod:
         query: >
-          FROM Metric SELECT average(http.server.requestsPerSecond)
-          WHERE (k8s.deploymentName = 'order-service-staging' AND k8s.clusterName = 'order-service-shared-eks')
-          SINCE 2 MINUTES AGO
+          SELECT rate(count(*), 1 second) 
+          FROM Transaction 
+          WHERE appName = 'order-service-staging' 
+          SINCE 2 minutes ago
         removeClusterFilter: true
