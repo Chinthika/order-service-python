@@ -1,8 +1,5 @@
 """FastAPI application entry point with observability hooks."""
 import newrelic.agent
-
-newrelic.agent.initialize('newrelic.ini')
-
 from fastapi import FastAPI, HTTPException
 
 from src.config import get_settings
@@ -10,9 +7,11 @@ from src.service.order_service import get_order as service_get_order
 from src.service.order_service import get_orders as service_get_orders
 from src.utils import create_response
 
+newrelic.agent.initialize('newrelic.ini')
+
 settings = get_settings()
 app = FastAPI(title=settings.app_name)
-if settings.environment is not "local":
+if settings.environment != "local":
     app = newrelic.agent.register_application()(app)
 
 
