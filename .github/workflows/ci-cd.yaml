@@ -97,7 +97,7 @@ jobs:
         uses: docker/scout-action@v1
         with:
           file: Infrastructure/Dockerfile
-          command: cves,recommendations,compare
+          command: cves,recommendations
           ignore-unchanged: true
           to-latest: true
           ignore-base: true
