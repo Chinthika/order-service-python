@@ -4,8 +4,8 @@ from locust import HttpUser, task, between
 
 # Simple Locust test aimed at prod
 # Usage examples:
-#   GUI:     locust -f api_load_test.py --host https://prod.chinthika-jayani.click
-#   Headless: locust -f api_load_test.py --headless -u 50 -r 5 -t 5m \
+#   GUI:     locust -f api_load_tester.py --host https://prod.chinthika-jayani.click
+#   Headless: locust -f api_load_tester.py --headless -u 50 -r 5 -t 5m \
 #             --host https://prod.chinthika-jayani.click
 # You can also set LOCUST_HOST env var instead of --host.
 
