@@ -103,6 +103,7 @@ jobs:
           ignore-base: true
           only-fixed: true
           only-severities: critical,high
+          exit-code: true
           image: ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.image_tag }}
           dockerhub-user: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-password: ${{ secrets.DOCKERHUB_TOKEN }}
