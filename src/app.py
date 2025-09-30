@@ -1,4 +1,7 @@
 """FastAPI application entry point with observability hooks."""
+import newrelic.agent
+
+newrelic.agent.initialize('newrelic.ini')
 
 from fastapi import FastAPI, HTTPException
 
@@ -9,6 +12,7 @@ from src.utils import create_response
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name)
+app = newrelic.agent.register_application()(app)
 
 
 @app.get("/")
