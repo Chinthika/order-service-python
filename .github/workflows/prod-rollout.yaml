@@ -161,3 +161,65 @@ jobs:
 
       - name: Run Regression Tests
         run: pytest -v regression_tester.py
+
+  monitor-error-rate-and-rollback-if-needed:
+    name: Monitor error rate and rollback if needed
+    runs-on: ubuntu-latest
+    needs:
+      - deploy-production
+      - run-sanity-tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.29.2
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Configure kubeconfig
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_CLUSTER_NAME }}
+
+      - name: Wait for 5 minutes before evaluation
+        run: sleep 300
+
+      - name: Check New Relic Error Rate
+        id: error-rate-monitoring
+        run: |
+          RESPONSE=$(curl -s -X POST https://api.newrelic.com/graphql \
+           -H "Content-Type: application/json" \
+           -H "API-Key: ${{ secrets.NEW_RELIC_API_KEY }}" \
+           -d '{
+             "query": "{
+               actor {
+                 account(id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}) {
+                   nrql(query: \"SELECT percentage(count(*), WHERE error IS true) AS errorRate FROM Transaction WHERE appName = '\''order-service-prod'\'' SINCE 5 minutes ago\") {
+                     results
+                   }
+                 }
+               }
+             }"
+           }')
+          
+          ERROR_RATE=$(echo $RESPONSE | jq -r '.data.actor.account.nrql.results[0].errorRate')
+          echo "Error rate: $ERROR_RATE"
+          echo "error_rate=$ERROR_RATE" >> $GITHUB_OUTPUT
+
+      - name: Rollback Helm if error rate too high
+        if: ${{ fromJSON(steps.error-rate.outputs.error_rate) > 5 }}
+        run: |
+          echo "Error rate above threshold, rolling back..."
+          helm rollback order-service-prod -n prod --wait --timeout 5m
+
