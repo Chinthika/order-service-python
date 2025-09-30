@@ -12,7 +12,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
+# Set New Relic config file as an environment variable
+ENV NEW_RELIC_CONFIG_FILE=newrelic.ini
+
 # Command to run the application
-ENTRYPOINT ["NEW_RELIC_CONFIG_FILE=newrelic.ini","newrelic-admin","run-program","uvicorn","main:app","--host","0.0.0.0","--port","8000"]
+ENTRYPOINT ["newrelic-admin","run-program","uvicorn","main:app","--host","0.0.0.0","--port","8000"]
 
 EXPOSE 8000
