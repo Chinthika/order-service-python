@@ -47,9 +47,7 @@ jobs:
 
       - name: Run pytest
         run: |
-          python -m pytest 
-          --ignore=test/test_regression.py
-          --maxfail=1 --disable-warnings
+          python -m pytest --maxfail=1 --disable-warnings
 
       - name: Run bandit security scan
         run: |
@@ -224,7 +222,7 @@ jobs:
           kubectl -n staging wait --for=condition=complete --timeout=180s job/order-service-smoke
           kubectl -n staging delete job order-service-smoke
       - name: Run Regression Tests
-        run: pytest -v tests/test_regression_urls.py
+        run: pytest -v regression_tester.py
   
 
   create-pr-to-main:

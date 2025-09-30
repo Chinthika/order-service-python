@@ -160,4 +160,4 @@ jobs:
           kubectl -n prod delete job order-service-smoke
 
       - name: Run Regression Tests
-        run: pytest -v tests/test_regression_urls.py
+        run: pytest -v regression_tester.py
