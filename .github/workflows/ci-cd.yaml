@@ -47,7 +47,10 @@ jobs:
 
       - name: Run pytest
         run: |
-          python -m pytest --maxfail=1 --disable-warnings
+          python -m pytest 
+          --ignore=tests/test_regression.py
+          --ignore=tests/api_load_test.py
+          --maxfail=1 --disable-warnings
 
       - name: Run bandit security scan
         run: |
@@ -182,9 +185,20 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - deploy-staging
+    env:
+      REGRESSION_BASE_URL: https://staging.chinthika-jayani.click
+      ENVIRONMENT: staging
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pytest + requests
+        run: pip install pytest requests
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -211,8 +225,7 @@ jobs:
           kubectl -n staging wait --for=condition=complete --timeout=180s job/order-service-smoke
           kubectl -n staging delete job order-service-smoke
       - name: Run Regression Tests
-        run: |
-          echo 'Tests would run here...'
+        run: pytest -v tests/test_regression_urls.py
   
 
   create-pr-to-main:
