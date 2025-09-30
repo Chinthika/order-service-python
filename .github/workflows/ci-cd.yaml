@@ -97,7 +97,12 @@ jobs:
         uses: docker/scout-action@v1
         with:
           file: Infrastructure/Dockerfile
-          command: cves,recommendations
+          command: cves,recommendations,compare
+          ignore-unchanged: true
+          to-latest: true
+          ignore-base: true
+          only-fixed: true
+          only-severities: critical,high
           image: ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.image_tag }}
           dockerhub-user: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-password: ${{ secrets.DOCKERHUB_TOKEN }}
