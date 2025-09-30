@@ -48,7 +48,7 @@ jobs:
       - name: Run pytest
         run: |
           python -m pytest 
-          --ignore=tests/test_regression.py
+          --ignore=test/test_regression.py
           --maxfail=1 --disable-warnings
 
       - name: Run bandit security scan
