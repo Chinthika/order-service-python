@@ -75,24 +75,46 @@ resource "helm_release" "newrelic" {
   }
 
   set {
-    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_pod.query"
-    value = "SELECT rate(count(*), 1 second) FROM Transaction WHERE appName = 'order-service-staging' SINCE 2 minutes ago"
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_second_staging.query"
+    value = "SELECT rate(count(*)\\, 1 second) FROM Transaction WHERE appName = 'order-service-staging' SINCE 2 minutes ago"
     type  = "string"
   }
 
   set {
-    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_pod.removeClusterFilter"
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_second_staging.removeClusterFilter"
     value = "true"
   }
 
   set {
-    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95.query"
-    value = "SELECT percentile(duration,95) * 50000 FROM Transaction WHERE appName = 'order-service-prod' SINCE 2 minutes ago"
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95_staging.query"
+    value = "SELECT percentile(duration\\,95) * 50000 FROM Transaction WHERE appName = 'order-service-staging' SINCE 2 minutes ago"
     type  = "string"
   }
 
   set {
-    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95.removeClusterFilter"
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95_staging.removeClusterFilter"
+    value = "true"
+  }
+
+  set {
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_second_prod.query"
+    value = "SELECT rate(count(*)\\, 1 second) FROM Transaction WHERE appName = 'order-service-prod' SINCE 2 minutes ago"
+    type  = "string"
+  }
+
+  set {
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_second_prod.removeClusterFilter"
+    value = "true"
+  }
+
+  set {
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95_prod.query"
+    value = "SELECT percentile(duration\\,95) * 50000 FROM Transaction WHERE appName = 'order-service-prod' SINCE 2 minutes ago"
+    type  = "string"
+  }
+
+  set {
+    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95_prod.removeClusterFilter"
     value = "true"
   }
 

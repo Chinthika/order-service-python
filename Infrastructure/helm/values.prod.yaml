@@ -106,9 +106,9 @@ autoscaling:
   targetMemoryUtilizationPercentage: 70
   external:
     metrics:
-      service_latency_p95:
+      service_latency_p95_prod:
         threshold: 250
-      requests_per_pod:
+      requests_per_second_prod:
         threshold: 25
 
 
@@ -122,21 +122,3 @@ nodeSelector: { }
 tolerations: [ ]
 
 affinity: { }
-
-newrelic-k8s-metrics-adapter:
-  config:
-    externalMetrics:
-      service_latency_p95:
-        query: >
-          SELECT percentile(duration,95) * 50000
-          FROM Transaction
-          WHERE appName = 'order-service-prod'
-          SINCE 2 minutes ago
-        removeClusterFilter: true
-      requests_per_pod:
-        query: >
-          SELECT rate(count(*), 1 second) 
-          FROM Transaction 
-          WHERE appName = 'order-service-prod' 
-          SINCE 2 minutes ago
-        removeClusterFilter: true
