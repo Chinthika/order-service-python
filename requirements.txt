@@ -3,3 +3,4 @@ uvicorn~=0.34.2
 boto3~=1.35.81
 pydantic-settings~=2.7.1
 newrelic~=11.0.0
+requests~=2.32.5

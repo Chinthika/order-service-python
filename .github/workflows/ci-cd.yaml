@@ -96,7 +96,14 @@ jobs:
       - name: Docker Scout CVE Scan (local image)
         uses: docker/scout-action@v1
         with:
+          file: Infrastructure/Dockerfile
           command: cves,recommendations
+          ignore-unchanged: true
+          to-latest: true
+          ignore-base: true
+          only-fixed: true
+          only-severities: critical,high
+          exit-code: true
           image: ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.image_tag }}
           dockerhub-user: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -104,6 +111,8 @@ jobs:
       - name: Push docker image
         uses: docker/build-push-action@v6
         with:
+          context: .
+          file: Infrastructure/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ env.DOCKER_IMAGE }}:${{ steps.meta.outputs.image_tag }}
@@ -173,9 +182,36 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - deploy-staging
+    env:
+      REGRESSION_BASE_URL: https://staging.chinthika-jayani.click
+      ENVIRONMENT: staging
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pytest + requests
+        run: pip install pytest requests
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.29.2
+
+      - name: Configure kubeconfig
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ env.EKS_CLUSTER_NAME }}
+
       - name: Simple Health Check
         run: |
           kubectl -n staging delete job order-service-smoke --ignore-not-found
@@ -186,8 +222,7 @@ jobs:
           kubectl -n staging wait --for=condition=complete --timeout=180s job/order-service-smoke
           kubectl -n staging delete job order-service-smoke
       - name: Run Regression Tests
-        run: |
-          echo 'Tests would run here...'
+        run: pytest -v regression_tester.py
   
 
   create-pr-to-main:
@@ -203,19 +238,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Create PR to main
-        if: github.ref != 'refs/heads/develop' && github.event_name != 'pull_request'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
-          commit-message: 'automated: merge to main branch'
-          branch: ${{ github.ref_name }}
-          base: main
-          title: 'Automated PR → main'
-          body: |
-            This PR was automatically created by GitHub Actions.
-            Triggered from branch `${{ github.ref_name }}`.
-          labels: |
-            automated
-            ci
-            deploy to production
+        run: |
+          gh pr create --base main --head develop --title "Automated PR: develop → main" --body "This PR was automatically created."
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
 

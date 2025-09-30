@@ -13,20 +13,19 @@ DEFAULT_HOST = "https://prod.chinthika-jayani.click"
 
 
 class APIUser(HttpUser):
-    # If no --host/LOCUST_HOST is provided, fall back to the prod URL
     host = os.getenv("LOCUST_HOST", DEFAULT_HOST)
 
-    # Pause between tasks to simulate real users
     wait_time = between(0.5, 2.0)
 
-    def on_start(self):
-        # Example: bearer token from env (if your API needs it)
-        token = os.getenv("API_BEARER_TOKEN")
+    def __init__(self, *args, **kwargs):
+        super().__init__(args, kwargs)
         self.common_headers = {"Accept": "application/json"}
+
+    def on_start(self):
+        token = os.getenv("API_BEARER_TOKEN")
         if token:
             self.common_headers["Authorization"] = f"Bearer {token}"
 
-    # --- Basic health check (fast, always-on) ---
     @task(3)
     def health(self):
         self.client.get("/health", headers=self.common_headers, name="GET /health")
