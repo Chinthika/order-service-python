@@ -62,7 +62,7 @@ variable "kubernetes_version" {
 variable "node_group_min_size" {
   type        = number
   description = "Minimum number of worker nodes"
-  default     = 10
+  default     = 12
 }
 
 variable "node_group_max_size" {
@@ -93,21 +93,6 @@ variable "monitoring_namespace" {
   type        = string
   description = "Namespace into which monitoring components are installed"
   default     = "monitoring"
-}
-
-variable "newrelic_license_key" {
-  type        = string
-  description = "New Relic license key for cluster monitoring"
-}
-
-variable "newrelic_account_id" {
-  type        = string
-  description = "New Relic account ID for cluster monitoring"
-}
-
-variable "newrelic_region" { # "US" or "EU"
-  type    = string
-  default = "US"
 }
 
 variable "root_domain" {
