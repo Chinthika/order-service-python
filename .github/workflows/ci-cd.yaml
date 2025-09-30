@@ -1,4 +1,4 @@
-name: order-service-ci-cd
+name: Staging CI Rollout
 
 on:
   push:

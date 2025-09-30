@@ -1,4 +1,4 @@
-name: manage-infrastructure
+name: Manage Infrastructure
 
 on:
   workflow_dispatch:
