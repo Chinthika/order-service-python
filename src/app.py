@@ -12,7 +12,8 @@ from src.utils import create_response
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name)
-app = newrelic.agent.register_application()(app)
+if settings.environment is not "local":
+    app = newrelic.agent.register_application()(app)
 
 
 @app.get("/")
