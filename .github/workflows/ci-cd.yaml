@@ -224,7 +224,7 @@ jobs:
         if: github.ref != 'refs/heads/develop' && github.event_name != 'pull_request'
         uses: peter-evans/create-pull-request@v7
         with:
-          token: '${{ secrets.GITHUB_TOKEN }}'
+          token: '${{ secrets.PERSONAL_GITHUB_TOKEN }}'
           commit-message: 'automated: merge to main branch'
           branch: ${{ github.ref_name }}
           base: main
