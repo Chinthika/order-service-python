@@ -74,25 +74,25 @@ resource "helm_release" "newrelic" {
     value = var.newrelic_account_id
   }
 
-  set {
-    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_pod.query"
-    value = "FROM Metric SELECT average(http.server.requestsPerSecond) WHERE (k8s.deploymentName = 'order-service-staging' AND k8s.clusterName = 'order-service-shared-eks') SINCE 2 MINUTES AGO"
-  }
-
-  set {
-    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_pod.removeClusterFilter"
-    value = "true"
-  }
-
-  set {
-    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95.query"
-    value = "FROM Metric SELECT percentile(http.server.duration, 95) WHERE (k8s.deploymentName = 'order-service-staging' AND k8s.clusterName = 'order-service-shared-eks') SINCE 2 MINUTES AGO"
-  }
-
-  set {
-    name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95.removeClusterFilter"
-    value = "true"
-  }
+  # set {
+  #   name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_pod.query"
+  #   value = "FROM Metric SELECT average(http.server.requestsPerSecond) WHERE (k8s.deploymentName = 'order-service-staging' AND k8s.clusterName = 'order-service-shared-eks') SINCE 2 MINUTES AGO"
+  # }
+  #
+  # set {
+  #   name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.requests_per_pod.removeClusterFilter"
+  #   value = "true"
+  # }
+  #
+  # set {
+  #   name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95.query"
+  #   value = "FROM Metric SELECT percentile(http.server.duration, 95) WHERE (k8s.deploymentName = 'order-service-staging' AND k8s.clusterName = 'order-service-shared-eks') SINCE 2 MINUTES AGO"
+  # }
+  #
+  # set {
+  #   name  = "newrelic-k8s-metrics-adapter.config.externalMetrics.service_latency_p95.removeClusterFilter"
+  #   value = "true"
+  # }
 
 
   # Region (US/EU)

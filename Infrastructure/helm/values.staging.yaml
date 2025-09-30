@@ -38,6 +38,10 @@ env:
     value: us-east-1
   - name: AWS_SECRET_NAME
     value: order-service/staging
+  - name: NEW_RELIC_ENABLED
+    value: "true"
+  - name: NEW_RELIC_APP_NAME
+    value: order-service-staging
 
 envFromSecrets: [ ]
 envFromConfigMaps: [ ]

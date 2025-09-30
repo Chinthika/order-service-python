@@ -163,9 +163,7 @@ jobs:
             --set ingress.certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
             --set-string newrelic-k8s-metrics-adapter.config.accountID=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
             --set-string newrelic-k8s-metrics-adapter.personalAPIKey=${{ secrets.NEW_RELIC_API_KEY }} \
-            --set env[6].name=NEW_RELIC_LICENSE_KEY --set env[6].value=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set env[7].name=NEW_RELIC_ENABLED --set env[7].value=true \
-            --set env[8].name=NEW_RELIC_APP_NAME --set env[8].value=order-service-staging
+            --set env[8].name=NEW_RELIC_LICENSE_KEY --set env[8].value=${{ secrets.NEW_RELIC_LICENSE_KEY }}
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/order-service-staging -n staging --timeout=180s
@@ -247,9 +245,7 @@ jobs:
             --set ingress.certificateArn=${{ secrets.ACM_CERTIFICATE_ARN }} \
             --set-string newrelic-k8s-metrics-adapter.config.accountID=${{ secrets.NEW_RELIC_ACCOUNT_ID }} \
             --set-string newrelic-k8s-metrics-adapter.personalAPIKey=${{ secrets.NEW_RELIC_API_KEY }} \
-            --set env[6].name=NEW_RELIC_LICENSE_KEY --set env[6].value=${{ secrets.NEW_RELIC_LICENSE_KEY }} \
-            --set env[7].name=NEW_RELIC_ENABLED --set env[7].value=true \
-            --set env[8].name=NEW_RELIC_APP_NAME --set env[8].value=order-service-prod
+            --set env[8].name=NEW_RELIC_LICENSE_KEY --set env[8].value=${{ secrets.NEW_RELIC_LICENSE_KEY }} 
 
       - name: Wait for rollout
         run: kubectl rollout status deployment/order-service-prod -n prod --timeout=180s
