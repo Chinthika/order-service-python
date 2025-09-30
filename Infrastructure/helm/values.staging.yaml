@@ -128,13 +128,13 @@ newrelic-k8s-metrics-adapter:
         query: >
           SELECT percentile(duration,95) * 50000
           FROM Transaction
-          WHERE appName = 'order-service-prod'
+          WHERE appName = 'order-service-staging'
           SINCE 2 minutes ago
         removeClusterFilter: true
       requests_per_pod:
         query: >
           SELECT rate(count(*), 1 second) 
           FROM Transaction 
-          WHERE appName = 'order-service-prod'
+          WHERE appName = 'order-service-staging'
           SINCE 2 minutes ago
         removeClusterFilter: true
