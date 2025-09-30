@@ -20,7 +20,7 @@ env:
 
 jobs:
   build-and-push-image:
-    name: Build and Scan image
+    name: Build and Push image
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.meta.outputs.image_tag }}
