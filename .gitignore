@@ -2,3 +2,4 @@
 .venv
 *-venv
 .terraform
+custom_scripts
