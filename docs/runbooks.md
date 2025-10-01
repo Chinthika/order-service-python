@@ -4,7 +4,7 @@
 
 1. Push to `main` or manually dispatch the workflow.
 2. Monitor the `order-service-ci-cd` workflow in GitHub Actions.
-3. Staging deployment completes automatically after tests and Docker push succeed.
+3. Staging deployment completes automatically after tests and Docker push succeeds.
 4. Validate the smoke test log in the workflow (`kubectl run order-service-smoke`).
 5. Approve the `production` environment in GitHub once staging is healthy.
 6. Confirm production rollout completes (`kubectl rollout status deployment/order-service-prod`).
@@ -19,7 +19,6 @@
 | `TF_BACKEND_BUCKET`, `TF_BACKEND_DYNAMODB_TABLE` | Remote state storage and locking resources           |
 | `EKS_ADMIN_ROLE_ARN_STAGING`, `EKS_ADMIN_ROLE_ARN_PROD` | IAM roles granted cluster-admin rights in each env |
 | `ACM_CERTIFICATE_ARN`                        | Certificate ARN injected into Helm deploys          |
-| `GRAFANA_ADMIN_PASSWORD`                     | Injected into Terraform for kube-prometheus-stack   |
 
 ## 2. Manual Deployment (Fallback)
 
@@ -80,12 +79,12 @@ kubectl rollout status deployment/order-service-prod -n prod --timeout=180s
 
 ## 5. Observability Checks
 
-| Action             | Command                                                                                                                            |
-|--------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| Prometheus targets | `kubectl get servicemonitor -n monitoring order-service-prod`                                                                      |
-| HPA status         | `kubectl get hpa -n prod order-service-prod`                                                                                       |
+| Action           | Command                                                                                                                            |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| NewRelic targets | `kubectl get servicemonitor -n monitoring order-service-prod`                                                                      |
+| HPA status       | `kubectl get hpa -n prod order-service-prod`                                                                                       |
 
-Prometheus alerts from kube-prometheus-stack can be tuned by overriding values in `Infrastructure/terraform/observability.tf`.
+NewRelic alerts from kube-newrelic-stack can be tuned by overriding values in `Infrastructure/terraform/observability.tf`.
 
 ## 6. Secrets Rotation
 
@@ -105,13 +104,3 @@ Prometheus alerts from kube-prometheus-stack can be tuned by overriding values i
 - **Plan:** `terraform plan -out=tfplan.binary`
 - **Apply:** `terraform apply tfplan.binary`
 - **Destroy (non-production only):** `terraform destroy`
-
-Always provide the required variables (e.g. `grafana_admin_password`) and backend config (`bucket`, `dynamodb_table`, `key`).
-
-## 8. Incident Response Checklist
-
-1. Inspect GitHub Actions logs for deployment failures and review `kubectl rollout` output.
-2. Check Prometheus/Grafana alerts for error details.
-3. If necessary, trigger manual rollback (Section 4).
-4. Validate service health (`/health`) after recovery.
-5. Create a post-incident ticket summarising the root cause and resolution.
