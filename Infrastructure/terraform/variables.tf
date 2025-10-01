@@ -139,3 +139,23 @@ variable "deploy_workloads" {
   type        = bool
   default     = false
 }
+
+variable "backend_bucket_name" {
+  description = "Name of the S3 bucket used for backend state"
+  type        = string
+}
+
+variable "backend_key_cluster" {
+  description = "Path within the S3 bucket for the Terraform state file"
+  type        = string
+}
+
+variable "backend_region" {
+  description = "AWS region where the backend S3 bucket is located"
+  type        = string
+}
+
+variable "backend_dynamodb_table" {
+  description = "Name of the DynamoDB table for state locking"
+  type        = string
+}
