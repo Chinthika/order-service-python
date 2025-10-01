@@ -124,6 +124,9 @@ jobs:
   provision-infrastructure:
     name: Trigger Manage Infrastructure
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch'
+    permissions:
+      id-token: write
+      contents: read
     needs:
       - build-scan-and-push-image
     uses: ./.github/workflows/infra-manage.yaml
