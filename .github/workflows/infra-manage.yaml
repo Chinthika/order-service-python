@@ -18,6 +18,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
+  AWS_EKS_CLUSTER_NAME: order-service-shared-eks
   ROOT_DOMAIN: chinthika-jayani.click
   STAGING_SUBDOMAIN: staging
   PROD_SUBDOMAIN: prod
@@ -68,7 +69,7 @@ jobs:
           echo "TF_VAR_newrelic_region=$NEW_RELIC_REGION" >> $GITHUB_ENV
           echo "TF_VAR_environment=shared" >> $GITHUB_ENV
           echo "TF_VAR_eks_admin_role_arn=${{ secrets.EKS_ADMIN_ROLE_ARN_STAGING }}" >> $GITHUB_ENV
-          echo "TF_VAR_cluster_name=order-service-shared-eks" >> $GITHUB_ENV
+          echo "TF_VAR_cluster_name=$AWS_EKS_CLUSTER_NAME" >> $GITHUB_ENV
 
       - name: Terraform fmt
         run: terraform fmt -check
@@ -76,7 +77,11 @@ jobs:
       - name: Terraform init - Cluster
         working-directory: Infrastructure/terraform
         run: |
-          terraform init
+          terraform init \
+            -backend-config="bucket=$TF_BACKEND_BUCKET_NAME" \
+            -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
+            -backend-config="key=$TF_BACKEND_KEY_CLUSTER" \
+            -backend-config="region=$AWS_REGION"
 
       - name: Terraform plan and apply - Cluster
         if: github.event.inputs.action == 'create'
@@ -92,7 +97,11 @@ jobs:
         if: github.event.inputs.action == 'create'
         working-directory: Infrastructure/terraform/workloads
         run: |
-          terraform init
+          terraform init \
+            -backend-config="bucket=$TF_BACKEND_BUCKET_NAME" \
+            -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
+            -backend-config="key=$TF_BACKEND_KEY_WORKLOADS" \
+            -backend-config="region=$AWS_REGION"
 
       - name: Terraform plan and apply - Workloads
         if: github.event.inputs.action == 'create'
@@ -107,7 +116,11 @@ jobs:
         working-directory: Infrastructure/terraform/workloads
         run: |
           export TF_VAR_deploy_workloads=true
-          terraform init
+          terraform init \
+            -backend-config="bucket=$TF_BACKEND_BUCKET_NAME" \
+            -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
+            -backend-config="key=$TF_BACKEND_KEY_WORKLOADS" \
+            -backend-config="region=$AWS_REGION"
           terraform plan -destroy -input=false -out=tfplan.workloads
           terraform apply -input=false tfplan.workloads
 
@@ -116,6 +129,10 @@ jobs:
         working-directory: Infrastructure/terraform
         run: |
           export TF_VAR_deploy_workloads=true
-          terraform init
+          terraform init \
+            -backend-config="bucket=$TF_BACKEND_BUCKET_NAME" \
+            -backend-config="dynamodb_table=$TF_BACKEND_DYNAMODB_TABLE" \
+            -backend-config="key=$TF_BACKEND_KEY_CLUSTER" \
+            -backend-config="region=$AWS_REGION"
           terraform plan -destroy -input=false -out=tfplan.cluster
           terraform apply -input=false tfplan.cluster
