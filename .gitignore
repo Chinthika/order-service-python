@@ -2,4 +2,6 @@
 .venv
 *-venv
 .terraform
+
 custom_scripts
+context_output
