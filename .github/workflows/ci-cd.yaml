@@ -127,6 +127,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    secrets: inherit
     needs:
       - build-scan-and-push-image
     uses: ./.github/workflows/infra-manage.yaml
