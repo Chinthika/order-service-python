@@ -204,22 +204,26 @@ jobs:
            -d '{
              "query": "{
                actor {
-                 account(id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}) {
-                   nrql(query: \"SELECT percentage(count(*), WHERE error IS true) AS errorRate FROM Transaction WHERE appName = '\''order-service-prod'\'' SINCE 5 minutes ago\") {
+                 account(id: '${{ secrets.NEW_RELIC_ACCOUNT_ID }}') {
+                   nrql(query: \"SELECT percentage(count(*), WHERE error IS true) AS errorRate FROM Transaction WHERE appName = 'order-service-prod' SINCE 5 minutes ago\") {
                      results
                    }
                  }
                }
              }"
            }')
-          
+
           ERROR_RATE=$(echo $RESPONSE | jq -r '.data.actor.account.nrql.results[0].errorRate')
           echo "Error rate: $ERROR_RATE"
+          # Default to 0 if null
+          if [ "$ERROR_RATE" = "null" ] || [ -z "$ERROR_RATE" ]; then
+            ERROR_RATE=0
+          fi
           echo "error_rate=$ERROR_RATE" >> $GITHUB_OUTPUT
 
       - name: Rollback Helm if error rate too high
-        if: ${{ fromJSON(steps.error-rate.outputs.error_rate) > 5 }}
+        if: ${{ fromJSON(steps.error-rate-monitoring.outputs.error_rate) > 5 }}
         run: |
           echo "Error rate above threshold, rolling back..."
           helm rollback order-service-prod -n prod --wait --timeout 5m
-
+          echo "Rollback complete"
