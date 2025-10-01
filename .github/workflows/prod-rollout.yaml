@@ -173,7 +173,7 @@ jobs:
           kubectl -n prod wait --for=condition=complete --timeout=180s job/order-service-smoke
           kubectl -n prod delete job order-service-smoke
 
-      - name: Run Regression Tests
+      - name: Run Sanity Tests
         run: pytest -v regression_tester.py
 
   monitor-error-rate-and-rollback-if-needed:

@@ -5,3 +5,6 @@
 
 custom_scripts
 context_output
+DNS_Configuration.csv
+__pycache__
+.DS_Store
