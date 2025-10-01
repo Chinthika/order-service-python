@@ -36,12 +36,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: infra-shared-${{ github.event.inputs.action }}
+  group: infra-shared-${{ inputs.action || github.event.inputs.action }}
   cancel-in-progress: false
 
 jobs:
   terraform:
-    name: Terraform ${{ github.event.inputs.action }}
+    name: Terraform ${{ inputs.action || github.event.inputs.action }}
     runs-on: ubuntu-latest
     environment: shared
     defaults:
@@ -84,7 +84,7 @@ jobs:
             -backend-config="region=$AWS_REGION"
 
       - name: Terraform plan and apply - Cluster
-        if: github.event.inputs.action == 'create'
+        if: github.event.inputs.action == 'create' || inputs.action == 'create'
         working-directory: Infrastructure/terraform
         run: |
           terraform plan -out=tfplan.cluster -input=false
@@ -94,7 +94,7 @@ jobs:
           aws eks wait cluster-active --name "$TF_VAR_cluster_name" --region "$AWS_REGION"
 
       - name: Terraform init - Workloads
-        if: github.event.inputs.action == 'create'
+        if: github.event.inputs.action == 'create' || inputs.action == 'create'
         working-directory: Infrastructure/terraform/workloads
         run: |
           terraform init \
@@ -104,7 +104,7 @@ jobs:
             -backend-config="region=$AWS_REGION"
 
       - name: Terraform plan and apply - Workloads
-        if: github.event.inputs.action == 'create'
+        if: github.event.inputs.action == 'create' || inputs.action == 'create'
         working-directory: Infrastructure/terraform/workloads
         run: |
           export TF_VAR_deploy_workloads=true
@@ -112,7 +112,7 @@ jobs:
           terraform apply -input=false tfplan.workloads
 
       - name: Terraform destroy - Workloads
-        if: github.event.inputs.action == 'destroy'
+        if: github.event.inputs.action == 'destroy' || inputs.action == 'destroy'
         working-directory: Infrastructure/terraform/workloads
         run: |
           export TF_VAR_deploy_workloads=true
@@ -125,7 +125,7 @@ jobs:
           terraform apply -input=false tfplan.workloads
 
       - name: Terraform destroy - Cluster
-        if: github.event.inputs.action == 'destroy'
+        if: github.event.inputs.action == 'destroy' || inputs.action == 'destroy'
         working-directory: Infrastructure/terraform
         run: |
           export TF_VAR_deploy_workloads=true
