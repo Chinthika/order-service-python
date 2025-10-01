@@ -25,7 +25,7 @@ class APIUser(HttpUser):
 
     # @task(4)
     # def get_order_by_wrong_id(self):
-    #     order_id = 11 # Wrong order ID
+    #     order_id = 11  # Wrong order ID
     #     self.client.get(f"/orders/{order_id}", headers=self.common_headers, name="GET /api/orders/{id}")
 
     @task(3)
