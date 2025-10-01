@@ -245,6 +245,7 @@ jobs:
             echo "pr_exists=false" >> $GITHUB_OUTPUT
           fi
 
+
   create-pr-to-main:
     name: Create PR to main
     runs-on: ubuntu-latest
@@ -253,6 +254,7 @@ jobs:
       contents: write
       pull-requests: write
     needs:
+      - pr-check
       - deploy-staging
       - run-regression-tests
     steps:
