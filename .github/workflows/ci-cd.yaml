@@ -226,9 +226,26 @@ jobs:
       - name: Run Regression Tests
         run: pytest -v regression_tester.py
 
+  pr-check:
+    name: Check if PR already exists
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Check if PR already exists
+        run: |
+          if gh pr view --base main --head develop > /dev/null 2>&1; then
+            echo "pr_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "pr_exists=false" >> $GITHUB_OUTPUT
+          fi
+
   create-pr-to-main:
     name: Create PR to main
     runs-on: ubuntu-latest
+    if: ${{ needs.pr-check.outputs.pr_exists == 'false' }}
     permissions:
       contents: write
       pull-requests: write
