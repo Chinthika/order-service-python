@@ -198,20 +198,10 @@ jobs:
       - name: Check New Relic Error Rate
         id: error-rate-monitoring
         run: |
-          RESPONSE=$(curl -s -X POST https://api.newrelic.com/graphql \
-           -H "Content-Type: application/json" \
-           -H "API-Key: ${{ secrets.NEW_RELIC_API_KEY }}" \
-           -d '{
-             "query": "{
-               actor {
-                 account(id: '${{ secrets.NEW_RELIC_ACCOUNT_ID }}') {
-                   nrql(query: \"SELECT percentage(count(*), WHERE error IS true) AS errorRate FROM Transaction WHERE appName = 'order-service-prod' SINCE 5 minutes ago\") {
-                     results
-                   }
-                 }
-               }
-             }"
-           }')
+          RESPONSE=$(curl --location 'https://api.newrelic.com/graphql' \
+          --header 'Content-Type: application/json' \
+          --header 'API-Key: ${{ secrets.NEW_RELIC_API_KEY }}' \
+          --data '{"query":"{\n          actor {\n            account(id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}) {\n              nrql(query: \"SELECT percentage(count(*), WHERE error IS true) AS errorRate FROM Transaction WHERE appName = '\''order-service-prod'\'' SINCE 5 minutes ago\") {\n                results\n              }\n            }\n          }\n        }","variables":{}}')
 
           ERROR_RATE=$(echo $RESPONSE | jq -r '.data.actor.account.nrql.results[0].errorRate')
           echo "Error rate: $ERROR_RATE"
