@@ -147,7 +147,7 @@ helm upgrade --install order-service-staging Infrastructure/helm \
   --set image.tag=$(git rev-parse --short HEAD)
 ```
 
-The chart exposes readiness/liveness probes and creates an HPA driven by built-in Kubernetes CPU/memory metrics. Prometheus/ServiceMonitor are no longer required; telemetry is shipped by New Relic agents.
+The chart exposes readiness/liveness probes and creates an HPA driven by built-in Kubernetes CPU/memory metrics. Telemetry is shipped by New Relic agents.
 
 ## CI/CD Pipeline
 
