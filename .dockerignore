@@ -31,3 +31,5 @@ Infrastructure/
 
 .venv
 *-venv
+context_output
+custom_scripts
