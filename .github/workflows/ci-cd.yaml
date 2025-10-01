@@ -253,7 +253,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Check if PR already exists
         run: |
-          if gh pr view --base main --head develop > /dev/null 2>&1; then
+          if gh pr list --base main --head develop --state open | grep -q .; then
             echo "pr_exists=true" >> $GITHUB_OUTPUT
           else
             echo "pr_exists=false" >> $GITHUB_OUTPUT

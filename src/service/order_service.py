@@ -9,7 +9,7 @@ def get_order(order_id):
     Fetches an order by its ID.
     """
     # Simulate fetching an order from a database
-    sleep(0.25 + (0.05 * int(random() * 5)))  # sleep for 50-100 ms
+    sleep(0.25 + (0.05 * int(random() * 5)))  # sleep for 25-50 ms
     for order in sample_orders:
         if order.id == order_id:
             return order
@@ -20,6 +20,6 @@ def get_orders():
     """
     Fetches all orders.
     """
-    sleep(0.25 + (0.05 * int(random() * 5)))  # sleep for 50-100 ms
+    sleep(0.25 + (0.05 * int(random() * 5)))  # sleep for 25-50 ms
     # Simulate fetching all orders from a database
     return sample_orders
