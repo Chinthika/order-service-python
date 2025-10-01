@@ -243,6 +243,8 @@ jobs:
   pr-check:
     name: Check if PR already exists
     runs-on: ubuntu-latest
+    outputs:
+      pr_exists: ${{ steps.pr_check.outputs.pr_exists }}
     needs:
       - deploy-staging
       - run-regression-tests
@@ -252,12 +254,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
       - name: Check if PR already exists
+        id: pr_check
         run: |
           if gh pr list --base main --head develop --state open | grep -q .; then
             echo "pr_exists=true" >> $GITHUB_OUTPUT
           else
             echo "pr_exists=false" >> $GITHUB_OUTPUT
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
 
 
   create-pr-to-main:
