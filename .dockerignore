@@ -31,3 +31,5 @@ Infrastructure/
 
 .venv
 *-venv
+
+custom_scripts/

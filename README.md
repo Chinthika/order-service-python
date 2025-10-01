@@ -115,11 +115,6 @@ terraform plan -out=tfplan.cluster
 terraform apply tfplan.cluster
 ```
 
-Optionally grant your IAM role temporary admin access if needed:
-```bash
-./scripts/access-grant.sh
-```
-
 2) Workloads — install controllers and addons
 ```bash
 cd Infrastructure/terraform/workloads
