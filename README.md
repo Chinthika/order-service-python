@@ -33,7 +33,7 @@ order-service/
 │       ├── variables.tf
 │       └── vpc.tf
 ├── src/
-│   ├── app.py                       # FastAPI application with Prometheus instrumentation
+│   ├── app.py                       # FastAPI application with New Relic instrumentation
 │   ├── config/
 │   │   ├── __init__.py
 │   │   ├── secrets.py               # AWS Secrets Manager integration

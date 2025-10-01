@@ -96,6 +96,7 @@ jobs:
       - name: Docker Scout CVE Scan (local image)
         uses: docker/scout-action@v1
         with:
+          github-token: '${{ secrets.PERSONAL_GITHUB_TOKEN }}'
           file: Infrastructure/Dockerfile
           command: cves,recommendations
           ignore-unchanged: true
@@ -110,6 +111,7 @@ jobs:
 
       - name: Push docker image
         uses: docker/build-push-action@v6
+        if: github.event_name != 'pull_request'
         with:
           context: .
           file: Infrastructure/Dockerfile
@@ -119,11 +121,25 @@ jobs:
             ${{ env.DOCKER_IMAGE }}:latest
   
 
+  provision-infrastructure:
+    name: Trigger Manage Infrastructure
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'workflow_dispatch')
+    permissions:
+      id-token: write
+      contents: read
+    secrets: inherit
+    needs:
+      - build-scan-and-push-image
+    uses: ./.github/workflows/infra-manage.yaml
+    with:
+      action: create
+
   deploy-staging:
     name: Deploy to staging
     runs-on: ubuntu-latest
     needs:
       - build-scan-and-push-image
+      - provision-infrastructure
     if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'workflow_dispatch')
     env:
       IMAGE_TAG: ${{ needs.build-scan-and-push-image.outputs.image_tag }}
@@ -223,15 +239,36 @@ jobs:
           kubectl -n staging delete job order-service-smoke
       - name: Run Regression Tests
         run: pytest -v regression_tester.py
-  
+
+  pr-check:
+    name: Check if PR already exists
+    runs-on: ubuntu-latest
+    needs:
+      - deploy-staging
+      - run-regression-tests
+    env:
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Check if PR already exists
+        run: |
+          if gh pr view --base main --head develop > /dev/null 2>&1; then
+            echo "pr_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "pr_exists=false" >> $GITHUB_OUTPUT
+          fi
+
 
   create-pr-to-main:
     name: Create PR to main
     runs-on: ubuntu-latest
+    if: ${{ needs.pr-check.outputs.pr_exists == 'false' }}
     permissions:
       contents: write
       pull-requests: write
     needs:
+      - pr-check
       - deploy-staging
       - run-regression-tests
     steps:
