@@ -17,14 +17,16 @@ class APIUser(HttpUser):
 
     wait_time = between(0.5, 2.0)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(args, kwargs)
-        self.common_headers = {"Accept": "application/json"}
-
     def on_start(self):
         token = os.getenv("API_BEARER_TOKEN")
+        self.common_headers = {"Accept": "application/json"}
         if token:
             self.common_headers["Authorization"] = f"Bearer {token}"
+
+    # @task(4)
+    # def get_order_by_wrong_id(self):
+    #     order_id = 11 # Wrong order ID
+    #     self.client.get(f"/orders/{order_id}", headers=self.common_headers, name="GET /api/orders/{id}")
 
     @task(3)
     def health(self):
@@ -37,5 +39,5 @@ class APIUser(HttpUser):
 
     @task(1)
     def get_order_by_id(self):
-        order_id = 1  # Change as needed or randomize within a valid range
+        order_id = 1  # Change as needed
         self.client.get(f"/orders/{order_id}", headers=self.common_headers, name="GET /api/orders/{id}")
